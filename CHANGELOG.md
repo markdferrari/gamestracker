@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/markdferrari/gamestracker/compare/v1.1.0...v1.2.0) (2026-02-05)
+
+
+### Features
+
+* deploy to domain root ([2919273](https://github.com/markdferrari/gamestracker/commit/29192731dd969edcf858ef44d6ef371ac85c561c))
+
 # [1.1.0](https://github.com/markdferrari/gamestracker/compare/v1.0.0...v1.1.0) (2026-02-05)
 
 
