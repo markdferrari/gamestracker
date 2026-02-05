@@ -4,6 +4,7 @@ import { GameCard } from '@/components/GameCard';
 import { PlatformFilter } from '@/components/PlatformFilter';
 import { ViewToggle } from '@/components/ViewToggle';
 import { Suspense } from 'react';
+import Image from 'next/image';
 
 interface PageProps {
   searchParams: Promise<{ platform?: string; view?: string }>;
@@ -37,11 +38,17 @@ export default async function Home({ searchParams }: PageProps) {
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-            WhenCanIPlayIt.com
-          </h1>
-          <p className="mt-2 text-lg text-zinc-600 dark:text-zinc-400">
+        <div className="mb-10 flex flex-col items-center text-center">
+          <div className="rounded-3xl bg-white/80 p-6 shadow-lg ring-1 ring-zinc-200 dark:bg-zinc-900/80 dark:ring-zinc-800">
+            <Image
+              src="/logo.png"
+              alt="WhenCanIPlayIt.com"
+              width={260}
+              height={260}
+              priority
+            />
+          </div>
+          <p className="mt-6 text-lg text-zinc-600 dark:text-zinc-400">
             {subtitle}
           </p>
         </div>

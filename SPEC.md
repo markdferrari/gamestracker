@@ -43,7 +43,7 @@ Plaintext
   /.env.local                 # IGDB_CLIENT_ID, IGDB_CLIENT_SECRET
 
 Feature:
-    A github workflow for creating releases
+    ASEO - how can we implement this?
     
 Feature:
     A "Track this Game" button on the detail page.
@@ -52,11 +52,7 @@ Feature:
     Route Handler: Create a POST route in /api/watchlist to handle this file write.
 
 Feature:
-    Light/dark mode toggle
-Feature:
     Mobile device optimisation
-Feature:
-    Branding
 Feature: 
     Embed official trailers
 

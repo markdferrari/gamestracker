@@ -79,6 +79,7 @@ export default async function GameDetailPage({ params }: PageProps) {
                   unoptimized
                   className="object-cover"
                   priority
+                  sizes="(max-width: 1024px) 80vw, 360px"
                 />
               </div>
             )}
@@ -150,6 +151,7 @@ export default async function GameDetailPage({ params }: PageProps) {
                         fill
                         unoptimized
                         className="object-cover"
+                        sizes="(max-width: 640px) 92vw, (max-width: 1024px) 45vw, 420px"
                       />
                     </div>
                   ))}
