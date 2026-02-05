@@ -21,6 +21,7 @@ export default $config({
     const site = new sst.aws.Nextjs("GameTracker", {
       domain: {
         name: "www.whencaniplayit.com",
+        aliases: ["whencaniplayit.com"],
         dns: sst.aws.dns({
           zone: zoneId,
         }),
