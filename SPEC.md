@@ -1,4 +1,4 @@
-Project Spec: PS-Release HQ (Next.js 16)
+Project Spec: PS-WhenCanIPlay.io (Next.js 16)
 1. Overview
 
 A "Project Command Center" for PlayStation enthusiasts to track upcoming game releases via the IGDB API and manage personal hype notes/research via local Markdown files.
@@ -63,14 +63,67 @@ Phase 2: Game Detail & Local Integration
 
     Hybrid View: 1. Display official summary and screenshots from IGDB. 2. Search the /data/notes/ folder for a file named [id].md. 3. If found, parse using gray-matter and render content below the official info.
 
-Phase 3: Simple Watchlist (Practice CRUD)
+Phase 3: Recent releases
 
-    Feature: A "Track this Game" button on the detail page.
+    I want a tab on the main page that switches to "Recently released" games
+    - It should pull the most recently released games for each platform, going back a max of 60 days.
+    - All other behaviour should match the current main page.
+    - Rename the main page to "Coming soon"
 
-    Persistence: For this practice version, saving a game should write the ID to a data/watchlist.json file.
+Feature:
+    A "Track this Game" button on the detail page.
 
+    Persistence: Can this be written to a cookie for users?
     Route Handler: Create a POST route in /api/watchlist to handle this file write.
 
+Feature:
+    Light/dark mode toggle
+
+Feature:
+    Branding
+
+Feature: link to reviews for released games
+
+    Purpose: Help users discover critical and user reception for recently released games
+    
+    Data Source: 
+    - Primary: OpenCritic API (free tier available, aggregate scores + review links)
+    - Fallback: Parse external_games data from IGDB for Metacritic IDs
+    - Alternative: Use IGDB websites field to find review site links
+    
+    Display Requirements:
+    1. Game Detail Page:
+       - Show review section below external links (if game was released in past 6 months)
+       - Display aggregate scores with distinctive styling
+       - Show "Top Critic Average" and "% Recommended" if available
+       - Link to full reviews on OpenCritic/Metacritic
+       - List 3-5 individual review snippets with scores and publication names
+       
+    2. Game Cards (Recently Released view only):
+       - Optional: Show small score badge (e.g., "85" with OpenCritic/Metacritic logo)
+       - Badge only appears if game has been released for 7+ days (reviews take time)
+    
+    Technical Implementation:
+    - Create lib/reviews.ts with functions to fetch review data
+    - Check IGDB's external_games field for Metacritic/OpenCritic IDs
+    - Cache review data for 7 days (reviews don't change often)
+    - Gracefully handle missing review data (not all games get reviewed)
+    
+    User Experience:
+    - Reviews only shown for games released within past 180 days
+    - Clear visual distinction between aggregate scores and individual reviews
+    - "No reviews yet" message for newly released games
+    - Links open in new tabs
+    
+    Future Enhancement:
+    - User review aggregation
+    - Filter games by review score
+    - Review score trends over time
+
+
+Feature:
+    Hide button to dismiss games
+    Should be persistent, again via cookies?
 4. API Implementation Details (for IGDB)
 
     Auth: Must implement a getAccessToken() function in lib/igdb.ts that handles the POST to https://id.twitch.tv/oauth2/token.
@@ -79,7 +132,7 @@ Phase 3: Simple Watchlist (Practice CRUD)
 
 5. Implementation Instructions for the Agent
 
-    Step 1: Initialize Next.js with Tailwind and TypeScript.
+    Step 1: Initialize Next.js with Tailwind and TypeScript if not already done so.
 
     Step 2: Set up the lib/igdb.ts helper to handle Twitch authentication.
 

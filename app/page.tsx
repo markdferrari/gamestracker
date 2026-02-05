@@ -1,25 +1,36 @@
-import { getUpcomingPSGames } from '@/lib/igdb';
+import { getUpcomingPSGames, getRecentlyReleasedGames } from '@/lib/igdb';
 import { GameCard } from '@/components/GameCard';
 import { PlatformFilter } from '@/components/PlatformFilter';
+import { ViewToggle } from '@/components/ViewToggle';
 import { Suspense } from 'react';
 
 interface PageProps {
-  searchParams: Promise<{ platform?: string }>;
+  searchParams: Promise<{ platform?: string; view?: string }>;
 }
 
 export default async function Home({ searchParams }: PageProps) {
   const params = await searchParams;
   const platformId = parseInt(params.platform || '167', 10);
+  const view = params.view || 'upcoming';
   
   let games;
   let error = null;
 
   try {
-    games = await getUpcomingPSGames(platformId);
+    if (view === 'recent') {
+      games = await getRecentlyReleasedGames(platformId);
+    } else {
+      games = await getUpcomingPSGames(platformId);
+    }
   } catch (e) {
     error = e instanceof Error ? e.message : 'Failed to fetch games';
     games = [];
   }
+
+  const title = view === 'recent' ? 'Recently Released' : 'Coming Soon';
+  const subtitle = view === 'recent' 
+    ? 'Games released in the past 60 days'
+    : 'Upcoming game releases';
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
@@ -27,12 +38,19 @@ export default async function Home({ searchParams }: PageProps) {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-            Release HQ
+            WhenCanIPlay.io
           </h1>
           <p className="mt-2 text-lg text-zinc-600 dark:text-zinc-400">
-            Upcoming game releases
+            {subtitle}
           </p>
         </div>
+
+        {/* View Toggle */}
+        <Suspense fallback={<div>Loading...</div>}>
+          <div className="mb-6">
+            <ViewToggle />
+          </div>
+        </Suspense>
 
         {/* Platform Filter */}
         <Suspense fallback={<div>Loading filters...</div>}>
@@ -62,7 +80,7 @@ export default async function Home({ searchParams }: PageProps) {
           !error && (
             <div className="rounded-lg border border-zinc-200 bg-white p-12 text-center dark:border-zinc-800 dark:bg-zinc-900">
               <p className="text-zinc-600 dark:text-zinc-400">
-                No upcoming games found.
+                {view === 'recent' ? 'No recently released games found.' : 'No upcoming games found.'}
               </p>
             </div>
           )
