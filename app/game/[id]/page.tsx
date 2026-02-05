@@ -5,6 +5,7 @@ import { ArrowLeft, Calendar, Gamepad2 } from 'lucide-react';
 import { getGameById, formatReleaseDate } from '@/lib/igdb';
 import { getGameNote } from '@/lib/notes';
 import { GameLinks } from '@/components/GameLinks';
+import { ReviewSection } from '@/components/ReviewSection';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -99,6 +100,16 @@ export default async function GameDetailPage({ params }: PageProps) {
                 </div>
               )}
             </div>
+
+            {/* Reviews & Ratings */}
+            <div className="mt-6">
+              <ReviewSection game={game} />
+            </div>
+
+            {/* External Links */}
+            <div className="mt-6">
+              <GameLinks websites={game.websites} />
+            </div>
           </div>
 
           {/* Right Column - Details */}
@@ -139,9 +150,6 @@ export default async function GameDetailPage({ params }: PageProps) {
                 </div>
               </div>
             )}
-
-            {/* External Links */}
-            <GameLinks websites={game.websites} />
 
             {/* Personal Notes */}
             {note && (
