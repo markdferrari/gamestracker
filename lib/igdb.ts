@@ -6,6 +6,7 @@ export interface IGDBGame {
   id: number;
   name: string;
   summary?: string;
+  game_status?: number;
   cover?: {
     url: string;
   };
@@ -15,6 +16,8 @@ export interface IGDBGame {
   release_dates?: Array<{
     human: string;
     date: number;
+    date_format?: number;
+    status?: number;
     platform: { id: number; name: string };
   }>;
   websites?: Array<{
@@ -27,6 +30,25 @@ export interface IGDBGame {
   }>;
   aggregated_rating?: number;
   aggregated_rating_count?: number;
+}
+
+interface IGDBReleaseDate {
+  id: number;
+  date: number;
+  human?: string;
+  date_format?: number;
+  status?: number;
+  platform?: { id: number; name: string };
+  game: {
+    id: number;
+    name: string;
+    summary?: string;
+    game_status?: number;
+    cover?: { url: string };
+    first_release_date?: number;
+    platforms?: Array<{ id: number; name: string }>;
+    screenshots?: Array<{ url: string }>;
+  };
 }
 
 /**
@@ -102,27 +124,91 @@ async function igdbRequest<T>(endpoint: string, body: string): Promise<T> {
  */
 export async function getUpcomingPSGames(platformId: number = 167): Promise<IGDBGame[]> {
   const currentTimestamp = Math.floor(Date.now() / 1000);
+  const sixMonthsAhead = currentTimestamp + (60 * 60 * 24 * 180); // 6 months
 
   const query = `
-    fields name, summary, cover.url, first_release_date, platforms.name, screenshots.url, release_dates.human, release_dates.date, release_dates.platform.name, release_dates.platform.id;
-    where platforms = (${platformId}) & release_dates.date != null & release_dates.date > ${currentTimestamp} & release_dates.platform = ${platformId};
-    sort release_dates.date asc;
-    limit 20;
+    fields date, human, date_format, status, platform.id, platform.name,
+      game.id, game.name, game.summary, game.cover.url, game.first_release_date,
+      game.game_status, game.platforms.name, game.screenshots.url;
+    where game.platforms = (${platformId}) & date != null & date > ${currentTimestamp} & date <= ${sixMonthsAhead}
+      & platform = ${platformId} & date_format != 7 & game.game_status != 0;
+    sort date asc;
+    limit 100;
   `;
 
-  const games = await igdbRequest<IGDBGame[]>('games', query);
-  
-  // Filter out games with past or missing release dates
-  return games.filter((game: IGDBGame) => {
-    if (!game.release_dates || game.release_dates.length === 0) return false;
-    
-    // Check if any release date for this platform is in the future
-    const hasFutureRelease = game.release_dates.some(rd => 
-      rd.platform?.id === platformId && rd.date && rd.date > currentTimestamp
-    );
-    
-    return hasFutureRelease;
-  });
+  const isTbc = (human?: string) => {
+    if (!human) return false;
+    const normalized = human.toLowerCase();
+    return normalized.includes('tbc') || normalized.includes('tbd');
+  };
+
+  const releaseDates = await igdbRequest<IGDBReleaseDate[]>('release_dates', query);
+  const gamesById = new Map<number, IGDBGame>();
+
+  for (const releaseDate of releaseDates) {
+    if (!releaseDate.game || isTbc(releaseDate.human)) continue;
+    if (releaseDate.date <= currentTimestamp || releaseDate.date > sixMonthsAhead) continue;
+
+    const existing = gamesById.get(releaseDate.game.id);
+    const game: IGDBGame = existing ?? {
+      id: releaseDate.game.id,
+      name: releaseDate.game.name,
+      summary: releaseDate.game.summary,
+      game_status: releaseDate.game.game_status,
+      cover: releaseDate.game.cover,
+      first_release_date: releaseDate.game.first_release_date,
+      platforms: releaseDate.game.platforms,
+      screenshots: releaseDate.game.screenshots,
+      release_dates: [],
+    };
+
+    game.release_dates = game.release_dates ?? [];
+    game.release_dates.push({
+      human: releaseDate.human ?? '',
+      date: releaseDate.date,
+      date_format: releaseDate.date_format,
+      status: releaseDate.status,
+      platform: releaseDate.platform ?? { id: platformId, name: '' },
+    });
+
+    gamesById.set(game.id, game);
+  }
+
+  const games = Array.from(gamesById.values());
+  const getPlatformReleaseDate = (game: IGDBGame) => {
+    if (!game.release_dates || game.release_dates.length === 0) return null;
+
+    const dates = game.release_dates
+      .filter(
+        (rd) =>
+          rd.platform?.id === platformId &&
+          typeof rd.date === 'number' &&
+          rd.date > currentTimestamp &&
+          rd.date <= sixMonthsAhead &&
+          rd.date_format !== 7 &&
+          !isTbc(rd.human),
+      )
+      .map((rd) => rd.date);
+
+    if (dates.length === 0) return null;
+    return Math.min(...dates);
+  };
+
+  return games
+    .map((game) => ({
+      ...game,
+      release_dates: (game.release_dates ?? []).sort((a, b) => a.date - b.date),
+    }))
+    .filter((game) => {
+      const date = getPlatformReleaseDate(game);
+      return typeof date === 'number' && date > currentTimestamp;
+    })
+    .sort((a, b) => {
+      const aDate = getPlatformReleaseDate(a) ?? 0;
+      const bDate = getPlatformReleaseDate(b) ?? 0;
+      return aDate - bDate;
+    })
+    .slice(0, 20);
 }
 
 /**
@@ -133,8 +219,8 @@ export async function getRecentlyReleasedGames(platformId: number = 167): Promis
   const sixtyDaysAgo = currentTimestamp - (60 * 24 * 60 * 60); // 60 days in seconds
 
   const query = `
-    fields name, summary, cover.url, first_release_date, platforms.name, screenshots.url, release_dates.human, release_dates.date, release_dates.platform.name, release_dates.platform.id;
-    where platforms = (${platformId}) & release_dates.date != null & release_dates.date >= ${sixtyDaysAgo} & release_dates.date <= ${currentTimestamp} & release_dates.platform = ${platformId};
+    fields name, summary, cover.url, first_release_date, game_status, platforms.name, screenshots.url, release_dates.human, release_dates.date, release_dates.platform.name, release_dates.platform.id;
+    where platforms = (${platformId}) & release_dates.date != null & release_dates.date >= ${sixtyDaysAgo} & release_dates.date <= ${currentTimestamp} & release_dates.platform = ${platformId} & game_status = 0;
     sort release_dates.date desc;
     limit 50;
   `;
