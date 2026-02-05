@@ -8,7 +8,7 @@ export interface GameNote {
   data: {
     title?: string;
     hype_level?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 

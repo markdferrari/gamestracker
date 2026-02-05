@@ -93,6 +93,59 @@ Feature:
         - No visual regressions to external links/reviews/notes sections
     
 Feature:
+    Bento-box grid style on homepage
+    I want this to be a scrolling timeline that shows game covers at or near their projected release date.
+    Use a library like Magic UI to create the components
+
+Feature:
+    UI Overhaul
+        It should be modern and clearly related to gaming.
+
+        Goals
+        - Establish a cohesive gaming-inspired visual language (bold, neon accents, layered surfaces)
+        - Improve visual hierarchy and scannability across all pages
+        - Maintain fast readability and accessibility
+        - Preserve existing data functionality and navigation patterns
+
+        Visual Style
+        - Primary palette: deep neutrals (zinc/black) with electric accent (blue/cyan)
+        - Use soft gradients in hero/headers and cards
+        - Subtle glassmorphism on header and cards (backdrop blur + translucent surfaces)
+        - Rounded corners (xl/2xl) and consistent shadow depth
+
+        Typography
+        - Use Geist for headings/body
+        - H1: bold, large, with tighter tracking
+        - Section headings: medium emphasis with clear spacing
+
+        Layout
+        - Persistent header with logo + theme toggle
+        - Footer with IGDB credit
+        - Page sections clearly separated with spacing and subtle dividers
+        - Use max-width containers and consistent padding across pages
+
+        Components
+        - Game Cards
+            - Emphasize cover art, release date badge, platform chips
+            - Hover states: subtle lift + glow
+        - Filters
+            - Pill-style buttons with active glow and pressed states
+        - Views toggle
+            - Segmented control with animated indicator
+        - Empty/Loading states
+            - Branded skeletons with soft shimmer
+
+        Mobile
+        - All cards stack to single column with full-width cover
+        - Buttons large enough for touch targets
+        - Reduce visual noise (fewer gradients/shadows)
+
+        Acceptance Criteria
+        - UI feels “gaming” without sacrificing readability
+        - Consistent spacing/typography across pages
+        - Components have coherent hover/active states
+        - Mobile layout is clean and thumb-friendly
+Feature:
     A "Track this Game" button on the detail page.
 
     Persistence: Can this be written to a cookie for users?

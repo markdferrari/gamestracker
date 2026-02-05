@@ -28,34 +28,24 @@ export default async function Home({ searchParams }: PageProps) {
     games = [];
   }
 
-  const title = view === 'recent' ? 'Recently Released' : 'Coming Soon';
   const subtitle = view === 'recent' 
     ? 'Games released in the past 60 days'
     : 'Upcoming game releases';
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-            WhenCanIPlayIt.com
-          </h1>
-          <p className="mt-2 text-lg text-zinc-600 dark:text-zinc-400">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.15),_transparent_45%)]">
+      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mb-10 flex flex-col items-center text-center">
+          <p className="text-lg text-zinc-600 dark:text-zinc-400">
             {subtitle}
           </p>
         </div>
 
-        {/* View Toggle */}
-        <Suspense fallback={<div>Loading...</div>}>
-          <div className="mb-6">
-            <ViewToggle />
-          </div>
-        </Suspense>
-
         {/* Platform Filter */}
         <Suspense fallback={<div>Loading filters...</div>}>
-          <PlatformFilter />
+          <div className="mb-8 flex justify-center">
+            <PlatformFilter />
+          </div>
         </Suspense>
 
         {/* Error Message */}

@@ -25,6 +25,10 @@ jest.mock("@/components/ReviewSection", () => ({
   ReviewSection: () => <div>Reviews</div>,
 }));
 
+jest.mock("@/components/ScreenshotGallery", () => ({
+  ScreenshotGallery: ({ title }: { title: string }) => <div>Gallery {title}</div>,
+}));
+
 jest.mock("@/lib/igdb", () => ({
   getGameById: jest.fn(),
   formatReleaseDate: jest.fn((timestamp: number) => {

@@ -6,6 +6,7 @@ import { getGameById, formatReleaseDate } from '@/lib/igdb';
 import { getGameNote } from '@/lib/notes';
 import { GameLinks } from '@/components/GameLinks';
 import { ReviewSection } from '@/components/ReviewSection';
+import { ScreenshotGallery } from '@/components/ScreenshotGallery';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -76,7 +77,7 @@ export default async function GameDetailPage({ params }: PageProps) {
     || [];
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.15),_transparent_45%)]">
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Back Button */}
         <Link
@@ -89,7 +90,7 @@ export default async function GameDetailPage({ params }: PageProps) {
 
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Left Column - Cover & Meta */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 lg:sticky lg:top-24 lg:self-start">
             <div className="space-y-6">
               <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                 <div
@@ -161,9 +162,27 @@ export default async function GameDetailPage({ params }: PageProps) {
 
           {/* Right Column - Details */}
           <div className="lg:col-span-2">
-            <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            <div className="space-y-4">
+              <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
               {game.name}
-            </h1>
+              </h1>
+              {platforms.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {platforms.map((platform) => (
+                    <span
+                      key={platform}
+                      className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+                    >
+                      {platform}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                <Calendar className="h-3.5 w-3.5" />
+                <span>{releaseDateHuman}</span>
+              </div>
+            </div>
 
             {/* Summary */}
             {game.summary && (
@@ -177,24 +196,16 @@ export default async function GameDetailPage({ params }: PageProps) {
               </div>
             )}
 
+            <div className="mt-8 border-t border-zinc-200/70 pt-8 dark:border-zinc-800/70" />
+
             {/* Screenshots */}
             {screenshots.length > 0 && (
               <div className="mt-8">
                 <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
                   Screenshots
                 </h2>
-                <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  {screenshots.map((screenshot, index) => (
-                    <div key={index} className="relative aspect-video overflow-hidden rounded-lg">
-                      <Image
-                        src={screenshot}
-                        alt={`${game.name} screenshot ${index + 1}`}
-                        fill
-                        unoptimized
-                        className="object-cover"
-                      />
-                    </div>
-                  ))}
+                <div className="mt-4">
+                  <ScreenshotGallery screenshots={screenshots} title={game.name} />
                 </div>
               </div>
             )}

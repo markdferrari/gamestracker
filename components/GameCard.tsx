@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Calendar, Gamepad2 } from 'lucide-react';
+import { Gamepad2 } from 'lucide-react';
 import type { IGDBGame } from '@/lib/igdb';
 import { formatReleaseDate } from '@/lib/igdb';
 
@@ -30,7 +30,7 @@ export function GameCard({ game }: GameCardProps) {
 
   return (
     <Link href={`/game/${game.id}`}>
-      <div className="group relative overflow-hidden rounded-lg border border-zinc-200 bg-white transition-all hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="group relative overflow-hidden rounded-2xl border border-zinc-200/70 bg-white/80 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl dark:border-zinc-800/70 dark:bg-zinc-900/80">
         {/* Cover Image */}
         <div className="relative aspect-[3/4] overflow-hidden bg-zinc-100 dark:bg-zinc-800">
           <Image
@@ -39,21 +39,18 @@ export function GameCard({ game }: GameCardProps) {
             fill
             unoptimized
             className="object-cover transition-transform group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, (max-width: 1280px) 33vw, 25vw"
           />
         </div>
 
         {/* Content */}
-        <div className="p-4">
+        <div className="space-y-3 p-4">
+          <div className="inline-flex items-center rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-700 dark:bg-sky-500/20 dark:text-sky-200">
+            {releaseDateHuman}
+          </div>
           <h3 className="mb-2 line-clamp-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             {game.name}
           </h3>
-
-          {/* Release Date */}
-          <div className="mb-2 flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-            <Calendar className="h-4 w-4" />
-            <span>{releaseDateHuman}</span>
-          </div>
 
           {/* Platforms */}
           {platforms.length > 0 && (

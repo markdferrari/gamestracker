@@ -1,20 +1,26 @@
 import { render, screen } from '@testing-library/react';
+import type React from 'react';
 import { GameCard } from '../GameCard';
 import type { IGDBGame } from '@/lib/igdb';
 
 // Mock Next.js Image component
 jest.mock('next/image', () => ({
   __esModule: true,
-  default: (props: any) => {
+  default: (
+    props: React.ImgHTMLAttributes<HTMLImageElement> & { src: string },
+  ) => {
     // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
-    return <img {...props} />;
+    const { src, alt, ...rest } = props;
+    return <img src={src} alt={alt} {...rest} />;
   },
 }));
 
 // Mock Next.js Link component
 jest.mock('next/link', () => ({
   __esModule: true,
-  default: ({ children, href }: any) => <a href={href}>{children}</a>,
+  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
 }));
 
 describe('GameCard', () => {
@@ -57,7 +63,10 @@ describe('GameCard', () => {
   it('should render cover image with correct src', () => {
     render(<GameCard game={mockGame} />);
     const img = screen.getByAltText('Test Game');
-    expect(img).toHaveAttribute('src', 'https://images.igdb.com/igdb/image/upload/t_cover_big/test.jpg');
+    expect(img).toHaveAttribute(
+      'src',
+      '/api/image?url=https%3A%2F%2Fimages.igdb.com%2Figdb%2Fimage%2Fupload%2Ft_cover_big%2Ftest.jpg',
+    );
   });
 
   it('should display TBA when no release date is available', () => {
