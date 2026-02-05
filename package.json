@@ -9,7 +9,10 @@
     "lint": "eslint",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "sst:dev": "sst dev",
+    "sst:deploy": "sst deploy --stage production",
+    "sst:remove": "sst remove"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
@@ -23,8 +26,11 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "aws-cdk-lib": "^2.237.1",
+    "constructs": "^10.4.5",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "sst": "^3.17.38",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

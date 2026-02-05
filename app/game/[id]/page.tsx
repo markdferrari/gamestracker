@@ -31,12 +31,16 @@ export default async function GameDetailPage({ params }: PageProps) {
 
   // Get the cover image URL
   const coverUrl = game.cover?.url
-    ? `https:${game.cover.url.replace('t_thumb', 't_cover_big')}`
+    ? `/api/image?url=${encodeURIComponent(
+        `https:${game.cover.url.replace('t_thumb', 't_cover_big')}`,
+      )}`
     : null;
 
   // Get screenshots
   const screenshots = game.screenshots?.map(s => 
-    `https:${s.url.replace('t_thumb', 't_screenshot_big')}`
+    `/api/image?url=${encodeURIComponent(
+      `https:${s.url.replace('t_thumb', 't_screenshot_big')}`,
+    )}`
   ) || [];
 
   // Get release date
@@ -72,6 +76,7 @@ export default async function GameDetailPage({ params }: PageProps) {
                   src={coverUrl}
                   alt={game.name}
                   fill
+                  unoptimized
                   className="object-cover"
                   priority
                 />
@@ -143,6 +148,7 @@ export default async function GameDetailPage({ params }: PageProps) {
                         src={screenshot}
                         alt={`${game.name} screenshot ${index + 1}`}
                         fill
+                        unoptimized
                         className="object-cover"
                       />
                     </div>

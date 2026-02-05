@@ -11,7 +11,9 @@ interface GameCardProps {
 export function GameCard({ game }: GameCardProps) {
   // Get the cover image URL and convert to high-res
   const coverUrl = game.cover?.url
-    ? `https:${game.cover.url.replace('t_thumb', 't_cover_big')}`
+    ? `/api/image?url=${encodeURIComponent(
+        `https:${game.cover.url.replace('t_thumb', 't_cover_big')}`,
+      )}`
     : '/placeholder-game.png';
 
   // Get the earliest release date for this game
@@ -35,6 +37,7 @@ export function GameCard({ game }: GameCardProps) {
             src={coverUrl}
             alt={game.name}
             fill
+            unoptimized
             className="object-cover transition-transform group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />

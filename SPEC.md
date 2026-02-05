@@ -1,4 +1,4 @@
-Project Spec: PS-WhenCanIPlay.io (Next.js 16)
+Project Spec: PS-WhenCanIPlayIt.com (Next.js 16)
 1. Overview
 
 A "Project Command Center" for PlayStation enthusiasts to track upcoming game releases via the IGDB API and manage personal hype notes/research via local Markdown files.
@@ -42,33 +42,6 @@ Plaintext
     /igdb.ts                  # Logic for Twitch Auth & API calls
   /.env.local                 # IGDB_CLIENT_ID, IGDB_CLIENT_SECRET
 
-3. Key Requirements & Features
-Phase 1: The "Coming Soon" Dashboard
-
-    Query: Fetch games from IGDB where platforms = (48, 167) (PS4/PS5) and release_dates.date > [current_timestamp].
-
-    UI: A responsive grid of cards showing:
-
-        Game Cover Art
-
-        Title
-
-        Human-readable release date
-
-        Platform icons (PS4/PS5)
-
-Phase 2: Game Detail & Local Integration
-
-    Dynamic Page: Clicking a card leads to /game/[id].
-
-    Hybrid View: 1. Display official summary and screenshots from IGDB. 2. Search the /data/notes/ folder for a file named [id].md. 3. If found, parse using gray-matter and render content below the official info.
-
-Phase 3: Recent releases
-
-    I want a tab on the main page that switches to "Recently released" games
-    - It should pull the most recently released games for each platform, going back a max of 60 days.
-    - All other behaviour should match the current main page.
-    - Rename the main page to "Coming soon"
 
 Feature:
     A "Track this Game" button on the detail page.
@@ -78,7 +51,8 @@ Feature:
 
 Feature:
     Light/dark mode toggle
-
+Feature:
+    Mobile device optimisation
 Feature:
     Branding
 

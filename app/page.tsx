@@ -1,4 +1,5 @@
 import { getUpcomingPSGames, getRecentlyReleasedGames } from '@/lib/igdb';
+import type { IGDBGame } from '@/lib/igdb';
 import { GameCard } from '@/components/GameCard';
 import { PlatformFilter } from '@/components/PlatformFilter';
 import { ViewToggle } from '@/components/ViewToggle';
@@ -13,7 +14,7 @@ export default async function Home({ searchParams }: PageProps) {
   const platformId = parseInt(params.platform || '167', 10);
   const view = params.view || 'upcoming';
   
-  let games;
+  let games: IGDBGame[] = [];
   let error = null;
 
   try {
@@ -38,7 +39,7 @@ export default async function Home({ searchParams }: PageProps) {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-            WhenCanIPlay.io
+            WhenCanIPlayIt.com
           </h1>
           <p className="mt-2 text-lg text-zinc-600 dark:text-zinc-400">
             {subtitle}

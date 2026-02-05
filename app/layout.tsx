@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "WhenCanIPlay.io",
+  title: "WhenCanIPlayIt.com",
   description: "Track upcoming game releases",
 };
 
