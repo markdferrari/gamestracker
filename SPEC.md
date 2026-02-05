@@ -42,7 +42,9 @@ Plaintext
     /igdb.ts                  # Logic for Twitch Auth & API calls
   /.env.local                 # IGDB_CLIENT_ID, IGDB_CLIENT_SECRET
 
-
+Feature:
+    A github workflow for creating releases
+    
 Feature:
     A "Track this Game" button on the detail page.
 
@@ -55,6 +57,8 @@ Feature:
     Mobile device optimisation
 Feature:
     Branding
+Feature: 
+    Embed official trailers
 
 Feature: link to reviews for released games
 
