@@ -32,19 +32,31 @@ export default $config({
       },
     });
 
-    // Add public access permission to server Lambda function URL
-    if (site.nodes.server) {
-      new aws.lambda.Permission("ServerUrlPermission", {
+    const nodes = site.nodes as {
+      server?: { name: string };
+      imageOptimizer?: { name: string };
+    };
+
+    const addPublicUrlPermissions = (idPrefix: string, functionName: string) => {
+      new aws.lambda.Permission(`${idPrefix}UrlPermission`, {
         action: "lambda:InvokeFunctionUrl",
-        function: site.nodes.server.name,
+        function: functionName,
         principal: "*",
         functionUrlAuthType: "NONE",
       });
-      new aws.lambda.Permission("ApiPermission", {
+      new aws.lambda.Permission(`${idPrefix}InvokePermission`, {
         action: "lambda:InvokeFunction",
-        function: site.nodes.server.name,
+        function: functionName,
         principal: "*",
       });
+    };
+
+    if (nodes.server) {
+      addPublicUrlPermissions("Server", nodes.server.name);
+    }
+
+    if (nodes.imageOptimizer) {
+      addPublicUrlPermissions("Image", nodes.imageOptimizer.name);
     }
   },
 });

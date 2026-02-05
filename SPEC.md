@@ -42,33 +42,6 @@ Plaintext
     /igdb.ts                  # Logic for Twitch Auth & API calls
   /.env.local                 # IGDB_CLIENT_ID, IGDB_CLIENT_SECRET
 
-3. Key Requirements & Features
-Phase 1: The "Coming Soon" Dashboard
-
-    Query: Fetch games from IGDB where platforms = (48, 167) (PS4/PS5) and release_dates.date > [current_timestamp].
-
-    UI: A responsive grid of cards showing:
-
-        Game Cover Art
-
-        Title
-
-        Human-readable release date
-
-        Platform icons (PS4/PS5)
-
-Phase 2: Game Detail & Local Integration
-
-    Dynamic Page: Clicking a card leads to /game/[id].
-
-    Hybrid View: 1. Display official summary and screenshots from IGDB. 2. Search the /data/notes/ folder for a file named [id].md. 3. If found, parse using gray-matter and render content below the official info.
-
-Phase 3: Recent releases
-
-    I want a tab on the main page that switches to "Recently released" games
-    - It should pull the most recently released games for each platform, going back a max of 60 days.
-    - All other behaviour should match the current main page.
-    - Rename the main page to "Coming soon"
 
 Feature:
     A "Track this Game" button on the detail page.
@@ -78,61 +51,8 @@ Feature:
 
 Feature:
     Light/dark mode toggle
-
-Feature: SST (Ion) Deployment to AWS
-  
-  Overview:
-    Deploy Next.js application to AWS using SST Ion (v3), which provides:
-    - AWS infrastructure as code with Pulumi/Terraform
-    - Automatic CloudFront CDN setup
-    - Lambda for server-side rendering
-    - Environment variable management
-    - Custom domain configuration with existing Route53 and ACM
-  
-  Infrastructure Dependencies:
-    - Route53 Hosted Zone: whencaniplayit.com (created via Terraform in /iac)
-    - ACM Certificate: *.whencaniplayit.com (to be imported)
-    - AWS Profile: markdferrari
-    - Region: eu-west-1
-  
-  SST Configuration (sst.config.ts):
-    1. AWS Provider setup with profile "markdferrari"
-    2. Next.js site configuration:
-       - Domain: whencaniplayit.com
-       - Environment variables from .env.local:
-         * IGDB_CLIENT_ID
-         * IGDB_CLIENT_SECRET
-       - Custom domain using existing Route53 zone
-       - SSL certificate from ACM
-    3. Build settings:
-       - OpenNext adapter for AWS Lambda
-       - Image optimization via Lambda
-       - ISR (Incremental Static Regeneration) support
-  
-  Package.json Scripts:
-    - "sst:dev" - Local development with SST
-    - "sst:deploy" - Deploy to AWS (production)
-    - "sst:remove" - Remove all AWS resources
-  
-  Deployment Workflow:
-    1. Install SST: npm install --save-dev sst
-    2. Initialize SST: npx sst init
-    3. Configure sst.config.ts with domain and environment
-    4. Set up secrets: npx sst secret set IGDB_CLIENT_ID <value>
-    5. Deploy: npm run sst:deploy
-  
-  File Storage Considerations:
-    - data/notes/*.md files need to be handled:
-      Decision: Store in S3 bucket and read via AWS SDK
-    - Recommended: Migrate to S3 for production, keep local for dev
-  
-  Security:
-    - Secrets managed via SST Secret
-    - API keys never in code or version control
-    - IAM roles with least privilege
-    - CloudFront with HTTPS only
-  
-
+Feature:
+    Mobile device optimisation
 Feature:
     Branding
 
