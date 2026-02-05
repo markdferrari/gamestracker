@@ -157,9 +157,9 @@ export async function getRecentlyReleasedGames(platformId: number = 167): Promis
   
   // Sort by the platform-specific release date and limit to 20
   return filteredGames
-    .sort((a, b) => {
-      const aDate = a.release_dates?.find(rd => rd.platform?.id === platformId)?.date || 0;
-      const bDate = b.release_dates?.find(rd => rd.platform?.id === platformId)?.date || 0;
+    .sort((a: IGDBGame, b: IGDBGame) => {
+      const aDate = a.release_dates?.find((rd: { platform?: { id: number }; date?: number }) => rd.platform?.id === platformId)?.date || 0;
+      const bDate = b.release_dates?.find((rd: { platform?: { id: number }; date?: number }) => rd.platform?.id === platformId)?.date || 0;
       return bDate - aDate; // Descending order (newest first)
     })
     .slice(0, 20);

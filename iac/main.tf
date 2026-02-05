@@ -1,8 +1,10 @@
 terraform {
   backend "s3" {
-    bucket = "632700996244-markdferrari-terraform-state"
-    key    = "wherecaniplayit/terraform.tfstate"
-    region = "eu-west-1"
+    bucket              = "632700996244-markdferrari-terraform-state"
+    key                 = "wherecaniplayit/terraform.tfstate"
+    region              = "eu-west-1"
+    allowed_account_ids = ["632700996244"]
+
   }
 
   required_providers {
@@ -14,7 +16,8 @@ terraform {
 }
 
 provider "aws" {
-  region = "eu-west-1"
+  region  = "us-east-1"
+  profile = "markdferrari"
 }
 
 # Route53 Hosted Zone

@@ -41,3 +41,7 @@ yarn-error.log*
 next-env.d.ts
 # next-agents-md
 .next-docs/
+.terraform*
+# sst
+.sst
+.open-next/

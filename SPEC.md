@@ -1,4 +1,4 @@
-Project Spec: PS-WhenCanIPlay.io (Next.js 16)
+Project Spec: PS-WhenCanIPlayIt.com (Next.js 16)
 1. Overview
 
 A "Project Command Center" for PlayStation enthusiasts to track upcoming game releases via the IGDB API and manage personal hype notes/research via local Markdown files.
@@ -78,6 +78,60 @@ Feature:
 
 Feature:
     Light/dark mode toggle
+
+Feature: SST (Ion) Deployment to AWS
+  
+  Overview:
+    Deploy Next.js application to AWS using SST Ion (v3), which provides:
+    - AWS infrastructure as code with Pulumi/Terraform
+    - Automatic CloudFront CDN setup
+    - Lambda for server-side rendering
+    - Environment variable management
+    - Custom domain configuration with existing Route53 and ACM
+  
+  Infrastructure Dependencies:
+    - Route53 Hosted Zone: whencaniplayit.com (created via Terraform in /iac)
+    - ACM Certificate: *.whencaniplayit.com (to be imported)
+    - AWS Profile: markdferrari
+    - Region: eu-west-1
+  
+  SST Configuration (sst.config.ts):
+    1. AWS Provider setup with profile "markdferrari"
+    2. Next.js site configuration:
+       - Domain: whencaniplayit.com
+       - Environment variables from .env.local:
+         * IGDB_CLIENT_ID
+         * IGDB_CLIENT_SECRET
+       - Custom domain using existing Route53 zone
+       - SSL certificate from ACM
+    3. Build settings:
+       - OpenNext adapter for AWS Lambda
+       - Image optimization via Lambda
+       - ISR (Incremental Static Regeneration) support
+  
+  Package.json Scripts:
+    - "sst:dev" - Local development with SST
+    - "sst:deploy" - Deploy to AWS (production)
+    - "sst:remove" - Remove all AWS resources
+  
+  Deployment Workflow:
+    1. Install SST: npm install --save-dev sst
+    2. Initialize SST: npx sst init
+    3. Configure sst.config.ts with domain and environment
+    4. Set up secrets: npx sst secret set IGDB_CLIENT_ID <value>
+    5. Deploy: npm run sst:deploy
+  
+  File Storage Considerations:
+    - data/notes/*.md files need to be handled:
+      Decision: Store in S3 bucket and read via AWS SDK
+    - Recommended: Migrate to S3 for production, keep local for dev
+  
+  Security:
+    - Secrets managed via SST Secret
+    - API keys never in code or version control
+    - IAM roles with least privilege
+    - CloudFront with HTTPS only
+  
 
 Feature:
     Branding
