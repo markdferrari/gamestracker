@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
 import { ThemeToggle } from "./ThemeToggle";
 import { ViewToggle } from "./ViewToggle";
 
@@ -20,7 +21,9 @@ export function Header() {
           </span>
         </Link>
         <div className="flex flex-1 items-center justify-center">
-          <ViewToggle />
+          <Suspense fallback={<div className="h-10 w-40" />}>
+            <ViewToggle />
+          </Suspense>
         </div>
         <ThemeToggle />
       </div>
