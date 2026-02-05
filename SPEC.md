@@ -41,10 +41,110 @@ Plaintext
   /lib
     /igdb.ts                  # Logic for Twitch Auth & API calls
   /.env.local                 # IGDB_CLIENT_ID, IGDB_CLIENT_SECRET
+Feature:
+    Improved game detail page
+        I want a more modern, user-friendly design on the game detail page.
+        It should emphasise the release date and show the poster as a large object.
+
+        Goals
+        - Make the release date the primary focus (clear, high-contrast, easy to scan)
+        - Present the cover/poster prominently with strong visual hierarchy
+        - Improve readabspacing and typography
+        - Ensure layout is responsive and looks polished on mobile
+
+        Layout
+        - Desktop (≥ 1024px): two-column layout
+            - Left column: large poster, release date, platforms, rating summary, external links
+            - Right column: title, summary, screenshots, notes, reviews
+        - Mobile (< 1024px): single-column layout
+            - Poster first, then release date + key metadata, then summary and screenshots
+
+        Poster/Cover
+        - Large cover image (3:4 ratio), rounded corners
+        - Sticky on desktop left column if possible (not required)
+        - Placeholder if cover missing
+
+        Release Date Emphasis
+        - Display as a “hero” badge near the cover
+        - Show both human date and relative date (e.g., “Feb 5, 2026 — 12 days away”)
+        - If unknown: show “TBA” with subdued styling
+
+        Metadata Block
+        - Platforms list with platform icons if available
+        - Add genre and publisher if IGDB provides it (optional)
+        - Clean card styling with subtle borders and shadows
+
+        Screenshots
+        - Responsive grid, 2 columns on desktop, 1 on mobile
+        - Use consistent aspect ratios and rounded corners
+
+        External Links + Reviews
+        - Keep in left column under metadata (desktop)
+        - On mobile, stack after metadata
+
+        Accessibility
+        - Alt text for all images
+        - Proper heading hierarchy (H1 title, H2 sections)
+
+        Acceptance Criteria
+        - Release date is visually dominant and easy to find
+        - Poster is large and high quality on all breakpoints
+        - Layout is clean and readable on mobile
+        - No visual regressions to external links/reviews/notes sections
+    
+Feature:
+    Bento-box grid style on homepage
+    I want this to be a scrolling timeline that shows game covers at or near their projected release date.
+    Use a library like Magic UI to create the components
 
 Feature:
-    A github workflow for creating releases
-    
+    UI Overhaul
+        It should be modern and clearly related to gaming.
+
+        Goals
+        - Establish a cohesive gaming-inspired visual language (bold, neon accents, layered surfaces)
+        - Improve visual hierarchy and scannability across all pages
+        - Maintain fast readability and accessibility
+        - Preserve existing data functionality and navigation patterns
+
+        Visual Style
+        - Primary palette: deep neutrals (zinc/black) with electric accent (blue/cyan)
+        - Use soft gradients in hero/headers and cards
+        - Subtle glassmorphism on header and cards (backdrop blur + translucent surfaces)
+        - Rounded corners (xl/2xl) and consistent shadow depth
+
+        Typography
+        - Use Geist for headings/body
+        - H1: bold, large, with tighter tracking
+        - Section headings: medium emphasis with clear spacing
+
+        Layout
+        - Persistent header with logo + theme toggle
+        - Footer with IGDB credit
+        - Page sections clearly separated with spacing and subtle dividers
+        - Use max-width containers and consistent padding across pages
+
+        Components
+        - Game Cards
+            - Emphasize cover art, release date badge, platform chips
+            - Hover states: subtle lift + glow
+        - Filters
+            - Pill-style buttons with active glow and pressed states
+        - Views toggle
+            - Segmented control with animated indicator
+        - Empty/Loading states
+            - Branded skeletons with soft shimmer
+
+        Mobile
+        - All cards stack to single column with full-width cover
+        - Buttons large enough for touch targets
+        - Reduce visual noise (fewer gradients/shadows)
+
+        Acceptance Criteria
+        - UI feels “gaming” without sacrificing readability
+        - Consistent spacing/typography across pages
+        - Components have coherent hover/active states
+        - Mobile layout is clean and thumb-friendly
 Feature:
     A "Track this Game" button on the detail page.
 

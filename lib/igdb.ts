@@ -75,7 +75,7 @@ async function getAccessToken(): Promise<string> {
 /**
  * Make a request to the IGDB API
  */
-async function igdbRequest(endpoint: string, body: string): Promise<any> {
+async function igdbRequest<T>(endpoint: string, body: string): Promise<T> {
   const token = await getAccessToken();
   const clientId = process.env.IGDB_CLIENT_ID!;
 
@@ -94,7 +94,7 @@ async function igdbRequest(endpoint: string, body: string): Promise<any> {
     throw new Error(`IGDB API error: ${response.statusText}`);
   }
 
-  return response.json();
+  return response.json() as Promise<T>;
 }
 
 /**
@@ -110,7 +110,7 @@ export async function getUpcomingPSGames(platformId: number = 167): Promise<IGDB
     limit 20;
   `;
 
-  const games = await igdbRequest('games', query);
+  const games = await igdbRequest<IGDBGame[]>('games', query);
   
   // Filter out games with past or missing release dates
   return games.filter((game: IGDBGame) => {
@@ -139,7 +139,7 @@ export async function getRecentlyReleasedGames(platformId: number = 167): Promis
     limit 50;
   `;
 
-  const games = await igdbRequest('games', query);
+  const games = await igdbRequest<IGDBGame[]>('games', query);
   
   // Filter games to ensure they have valid release dates within the past 60 days for the specific platform
   const filteredGames = games.filter((game: IGDBGame) => {
@@ -174,7 +174,7 @@ export async function getGameById(id: number): Promise<IGDBGame | null> {
     where id = ${id};
   `;
 
-  const results = await igdbRequest('games', query);
+  const results = await igdbRequest<IGDBGame[]>('games', query);
   return results.length > 0 ? results[0] : null;
 }
 

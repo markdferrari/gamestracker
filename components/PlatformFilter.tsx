@@ -21,20 +21,20 @@ export function PlatformFilter() {
   };
 
   return (
-    <div className="mb-6 flex items-center gap-4">
-      <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-        Platform:
-      </label>
-      <div className="flex gap-2">
+    <div className="flex flex-wrap items-center gap-3">
+      <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        Platform
+      </span>
+      <div className="flex flex-wrap gap-2 rounded-full border border-zinc-200/70 bg-white/80 p-2 shadow-sm dark:border-zinc-800/70 dark:bg-zinc-900/80">
         {PLATFORMS.map((platform) => (
           <button
             key={platform.id}
             onClick={() => handlePlatformChange(platform.id)}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+            className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wide transition ${
               currentPlatform === platform.id
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-zinc-700 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-            } border border-zinc-200 dark:border-zinc-700`}
+                ? 'bg-sky-500 text-white shadow shadow-sky-500/40'
+                : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800'
+            }`}
           >
             {platform.name}
           </button>

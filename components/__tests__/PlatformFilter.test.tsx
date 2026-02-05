@@ -32,7 +32,7 @@ describe('PlatformFilter', () => {
     render(<PlatformFilter />);
     
     const ps5Button = screen.getByText('PlayStation 5');
-    expect(ps5Button).toHaveClass('bg-blue-600');
+    expect(ps5Button).toHaveClass('bg-sky-500');
   });
 
   it('should highlight selected platform from search params', () => {
@@ -42,7 +42,7 @@ describe('PlatformFilter', () => {
     render(<PlatformFilter />);
     
     const pcButton = screen.getByText('PC');
-    expect(pcButton).toHaveClass('bg-blue-600');
+    expect(pcButton).toHaveClass('bg-sky-500');
   });
 
   it('should navigate when platform is clicked', async () => {

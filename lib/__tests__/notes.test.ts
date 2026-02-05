@@ -87,7 +87,7 @@ This is a test note.`;
 
     it('should return list of game notes excluding README', () => {
       mockFs.existsSync.mockReturnValue(true);
-      mockFs.readdirSync.mockReturnValue(['12345.md', '67890.md', 'README.md'] as any);
+      mockFs.readdirSync.mockReturnValue(['12345.md', '67890.md', 'README.md']);
       mockFs.readFileSync.mockImplementation((filePath) => {
         if (filePath.toString().includes('12345')) {
           return '---\ntitle: Game One\n---\nContent';
@@ -106,7 +106,7 @@ This is a test note.`;
 
     it('should use default title if note has no title in frontmatter', () => {
       mockFs.existsSync.mockReturnValue(true);
-      mockFs.readdirSync.mockReturnValue(['12345.md'] as any);
+      mockFs.readdirSync.mockReturnValue(['12345.md']);
       mockFs.readFileSync.mockReturnValue('No frontmatter here');
       
       const result = getAllGameNotes();

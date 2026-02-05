@@ -19,16 +19,16 @@ export function ViewToggle() {
   };
 
   return (
-    <div className="flex gap-2">
+    <div className="inline-flex rounded-full border border-zinc-200/70 bg-white/80 p-1 shadow-sm dark:border-zinc-800/70 dark:bg-zinc-900/80">
       {VIEWS.map((view) => (
         <button
           key={view.id}
           onClick={() => handleViewChange(view.id)}
-          className={`rounded-lg px-6 py-2.5 text-sm font-medium transition-colors ${
+          className={`rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-wide transition ${
             currentView === view.id
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-zinc-700 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'
-          } border border-zinc-200 dark:border-zinc-700`}
+              ? 'bg-sky-500 text-white shadow shadow-sky-500/40'
+              : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800'
+          }`}
         >
           {view.name}
         </button>
