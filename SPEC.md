@@ -41,9 +41,56 @@ Plaintext
   /lib
     /igdb.ts                  # Logic for Twitch Auth & API calls
   /.env.local                 # IGDB_CLIENT_ID, IGDB_CLIENT_SECRET
-
 Feature:
-    A github workflow for creating releases
+    Improved game detail page
+        I want a more modern, user-friendly design on the game detail page.
+        It should emphasise the release date and show the poster as a large object.
+
+        Goals
+        - Make the release date the primary focus (clear, high-contrast, easy to scan)
+        - Present the cover/poster prominently with strong visual hierarchy
+        - Improve readabspacing and typography
+        - Ensure layout is responsive and looks polished on mobile
+
+        Layout
+        - Desktop (≥ 1024px): two-column layout
+            - Left column: large poster, release date, platforms, rating summary, external links
+            - Right column: title, summary, screenshots, notes, reviews
+        - Mobile (< 1024px): single-column layout
+            - Poster first, then release date + key metadata, then summary and screenshots
+
+        Poster/Cover
+        - Large cover image (3:4 ratio), rounded corners
+        - Sticky on desktop left column if possible (not required)
+        - Placeholder if cover missing
+
+        Release Date Emphasis
+        - Display as a “hero” badge near the cover
+        - Show both human date and relative date (e.g., “Feb 5, 2026 — 12 days away”)
+        - If unknown: show “TBA” with subdued styling
+
+        Metadata Block
+        - Platforms list with platform icons if available
+        - Add genre and publisher if IGDB provides it (optional)
+        - Clean card styling with subtle borders and shadows
+
+        Screenshots
+        - Responsive grid, 2 columns on desktop, 1 on mobile
+        - Use consistent aspect ratios and rounded corners
+
+        External Links + Reviews
+        - Keep in left column under metadata (desktop)
+        - On mobile, stack after metadata
+
+        Accessibility
+        - Alt text for all images
+        - Proper heading hierarchy (H1 title, H2 sections)
+
+        Acceptance Criteria
+        - Release date is visually dominant and easy to find
+        - Poster is large and high quality on all breakpoints
+        - Layout is clean and readable on mobile
+        - No visual regressions to external links/reviews/notes sections
     
 Feature:
     A "Track this Game" button on the detail page.

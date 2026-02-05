@@ -11,6 +11,23 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+const formatReleaseBadge = (unixSeconds: number) => {
+  const now = Date.now();
+  const target = unixSeconds * 1000;
+  const diffMs = target - now;
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return "Today";
+  }
+
+  if (diffDays > 0) {
+    return `${diffDays} days away`;
+  }
+
+  return `${Math.abs(diffDays)} days ago`;
+};
+
 export default async function GameDetailPage({ params }: PageProps) {
   const { id } = await params;
   const gameId = parseInt(id, 10);
@@ -47,6 +64,9 @@ export default async function GameDetailPage({ params }: PageProps) {
   const releaseDate = game.release_dates?.[0]?.date || game.first_release_date;
   const releaseDateHuman = game.release_dates?.[0]?.human || 
     (releaseDate ? formatReleaseDate(releaseDate) : 'TBA');
+  const releaseDateBadge = releaseDate
+    ? formatReleaseBadge(releaseDate)
+    : 'TBA';
 
   // Get platforms
   const platforms = game.release_dates
@@ -70,40 +90,62 @@ export default async function GameDetailPage({ params }: PageProps) {
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Left Column - Cover & Meta */}
           <div className="lg:col-span-1">
-            {coverUrl && (
-              <div className="relative aspect-[3/4] overflow-hidden rounded-lg">
-                <Image
-                  src={coverUrl}
-                  alt={game.name}
-                  fill
-                  unoptimized
-                  className="object-cover"
-                  priority
-                />
-              </div>
-            )}
-
-            {/* Meta Information */}
-            <div className="mt-6 space-y-4 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-              <div>
-                <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-                  <Calendar className="h-4 w-4" />
-                  <span className="font-medium">Release Date</span>
+            <div className="space-y-6">
+              <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                <div
+                  className="mb-4 rounded-xl bg-gradient-to-br from-zinc-900 to-zinc-700 px-4 py-3 text-white dark:from-zinc-100 dark:to-zinc-300 dark:text-zinc-900"
+                  data-testid="release-date-hero"
+                >
+                  <div className="text-xs font-semibold uppercase tracking-wide opacity-80">
+                    Release date
+                  </div>
+                  <div className="mt-1 text-lg font-semibold">
+                    {releaseDateHuman}
+                  </div>
+                  <div className="text-sm opacity-80">{releaseDateBadge}</div>
                 </div>
-                <p className="mt-1 text-zinc-900 dark:text-zinc-100">{releaseDateHuman}</p>
+
+                {coverUrl ? (
+                  <div className="relative aspect-[3/4] overflow-hidden rounded-xl">
+                    <Image
+                      src={coverUrl}
+                      alt={game.name}
+                      fill
+                      unoptimized
+                      className="object-cover"
+                      priority
+                      sizes="(max-width: 1024px) 80vw, 360px"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex aspect-[3/4] items-center justify-center rounded-xl bg-zinc-100 text-sm text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                    No cover available
+                  </div>
+                )}
               </div>
 
-              {platforms.length > 0 && (
+              {/* Meta Information */}
+              <div className="space-y-4 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
                 <div>
                   <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    <Gamepad2 className="h-4 w-4" />
-                    <span className="font-medium">Platforms</span>
+                    <Calendar className="h-4 w-4" />
+                    <span className="font-medium">Release Date</span>
                   </div>
-                  <p className="mt-1 text-zinc-900 dark:text-zinc-100">
-                    {platforms.join(', ')}
-                  </p>
+                  <p className="mt-1 text-zinc-900 dark:text-zinc-100">{releaseDateHuman}</p>
                 </div>
-              )}
+
+                {platforms.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+                      <Gamepad2 className="h-4 w-4" />
+                      <span className="font-medium">Platforms</span>
+                    </div>
+                    <p className="mt-1 text-zinc-900 dark:text-zinc-100">
+                      {platforms.join(', ')}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Reviews & Ratings */}
@@ -129,7 +171,7 @@ export default async function GameDetailPage({ params }: PageProps) {
                 <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
                   About
                 </h2>
-                <p className="mt-2 text-zinc-700 leading-relaxed dark:text-zinc-300">
+                <p className="mt-3 text-base leading-relaxed text-zinc-700 dark:text-zinc-300">
                   {game.summary}
                 </p>
               </div>
