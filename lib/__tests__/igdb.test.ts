@@ -1,4 +1,12 @@
-import { formatReleaseDate, getGameById, getRecentlyReleasedGames, getUpcomingPSGames, resetIGDBTokenCacheForTests } from '../igdb';
+import {
+  formatReleaseDate,
+  getGameById,
+  getRecentlyReleasedGames,
+  getUpcomingPSGames,
+  resetIGDBSearchCacheForTests,
+  resetIGDBTokenCacheForTests,
+  searchGameByName,
+} from '../igdb';
 
 describe('formatReleaseDate', () => {
   it('should format Unix timestamp to human-readable date', () => {
@@ -180,6 +188,64 @@ describe('getUpcomingPSGames', () => {
     const igdbInit = fetchMock.mock.calls[1][1];
     const body = typeof igdbInit?.body === 'string' ? igdbInit.body : '';
     expect(body).toContain('platform.platform_type = (6)');
+  });
+});
+
+describe('searchGameByName', () => {
+  const originalFetch = globalThis.fetch;
+  const originalClientId = process.env.IGDB_CLIENT_ID;
+  const originalClientSecret = process.env.IGDB_CLIENT_SECRET;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+    process.env.IGDB_CLIENT_ID = originalClientId;
+    process.env.IGDB_CLIENT_SECRET = originalClientSecret;
+    resetIGDBSearchCacheForTests();
+    resetIGDBTokenCacheForTests();
+    jest.restoreAllMocks();
+  });
+
+  it('caches game lookups by name to reduce IGDB calls', async () => {
+    process.env.IGDB_CLIENT_ID = 'test-client';
+    process.env.IGDB_CLIENT_SECRET = 'test-secret';
+
+    const fetchMock = jest.fn<
+      Promise<Response>,
+      [RequestInfo | URL, RequestInit | undefined]
+    >();
+
+    const tokenResponse = {
+      ok: true,
+      statusText: 'OK',
+      json: async () => ({ access_token: 'token', expires_in: 3600 }),
+    } as unknown as Response;
+
+    const gamesResponse = {
+      ok: true,
+      statusText: 'OK',
+      json: async () => [
+        {
+          id: 123,
+          name: 'Cached Game',
+          cover: { url: '//images.igdb.com/igdb/image/upload/t_thumb/cover.jpg' },
+        },
+      ],
+    } as unknown as Response;
+
+    fetchMock
+      .mockResolvedValueOnce(tokenResponse)
+      .mockResolvedValueOnce(gamesResponse);
+
+    globalThis.fetch = fetchMock;
+
+    await searchGameByName('Cached Game');
+    await searchGameByName('Cached Game');
+
+    const gamesCalls = fetchMock.mock.calls.filter(([request]) =>
+      request.toString().includes('/games')
+    );
+
+    expect(gamesCalls).toHaveLength(1);
   });
 });
 

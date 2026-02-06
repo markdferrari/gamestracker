@@ -1,13 +1,29 @@
-import { getReviewedThisWeek } from '@/lib/opencritic';
 import type { OpenCriticReview } from '@/lib/opencritic';
 import { ReviewCarousel } from './ReviewCarousel';
 import { Trophy } from 'lucide-react';
+import { headers } from 'next/headers';
 
 export async function LatestReviewsSection() {
   let reviews: OpenCriticReview[] = [];
 
   try {
-    reviews = await getReviewedThisWeek(10);
+    const headerList = await headers();
+    const host = headerList.get('x-forwarded-host') ?? headerList.get('host');
+    const protocol = headerList.get('x-forwarded-proto') ?? 'http';
+    const fallbackBaseUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ?? process.env.SITE_URL ?? 'http://localhost:3000';
+    const baseUrl = host ? `${protocol}://${host}` : fallbackBaseUrl;
+    const requestUrl = `${baseUrl}/api/opencritic/reviewed-this-week?limit=10`;
+
+    const response = await fetch(requestUrl, {
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      throw new Error(`OpenCritic proxy failed: ${response.status} ${response.statusText}`);
+    }
+
+    reviews = (await response.json()) as OpenCriticReview[];
   } catch (error) {
     console.error('Failed to fetch latest reviews:', error);
     // Return empty reviews array on error

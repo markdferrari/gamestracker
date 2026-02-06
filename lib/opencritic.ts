@@ -132,7 +132,10 @@ const openCriticFetch = async (
 
     const response = await fetch(url, init);
 
-    if (response.status !== 429) {
+    const isRateLimited = response.status === 429;
+    const isTransientFailure = response.status === 503;
+
+    if (!isRateLimited && !isTransientFailure) {
       return response;
     }
 
@@ -140,12 +143,12 @@ const openCriticFetch = async (
       return response;
     }
 
-    const retryAfterMs = parseRetryAfterMs(response);
+    const retryAfterMs = isRateLimited ? parseRetryAfterMs(response) : null;
     const backoffMs = Math.min(maxDelayMs, baseDelayMs * Math.pow(2, attempt));
     const jitterMs = retryAfterMs !== null ? 0 : Math.floor(Math.random() * 100);
     const delayMs = (retryAfterMs ?? backoffMs) + jitterMs;
 
-    // If we get rate-limited, slow down subsequent queued requests too.
+    // If we get rate-limited or a transient failure, slow down subsequent queued requests too.
     openCriticNextAllowedAt = Math.max(openCriticNextAllowedAt, Date.now() + delayMs);
 
     await sleep(delayMs);

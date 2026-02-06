@@ -193,6 +193,48 @@ describe('getReviewedThisWeek', () => {
     }
   });
 
+  it('retries when API returns 503', async () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(0));
+
+    try {
+      process.env.RAPID_API_KEY = 'test-rapid-api-key';
+      jest.spyOn(igdbLib, 'searchGameByName').mockResolvedValue(null);
+
+      const fetchMock = jest
+        .fn<Promise<Response>, [RequestInfo | URL, RequestInit | undefined]>()
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 503,
+          statusText: 'Service Unavailable',
+          headers: {
+            get: () => null,
+          },
+        } as unknown as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => [],
+        } as Response);
+
+      globalThis.fetch = fetchMock;
+
+      const promise = getReviewedThisWeek();
+
+      await jest.advanceTimersByTimeAsync(0);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+
+      await jest.advanceTimersByTimeAsync(1000);
+      await jest.runOnlyPendingTimersAsync();
+
+      const result = await promise;
+      expect(result).toEqual([]);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('should throw an error if network request fails', async () => {
     process.env.RAPID_API_KEY = 'test-rapid-api-key';
 

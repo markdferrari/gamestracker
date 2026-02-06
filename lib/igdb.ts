@@ -2,10 +2,51 @@
 
 let cachedToken: { access_token: string; expires_at: number } | null = null;
 
+type IGDBSearchCacheValue = IGDBGame | null;
+
+type IGDBSearchCacheEntry =
+  | { kind: 'value'; value: IGDBSearchCacheValue; expiresAt: number }
+  | { kind: 'promise'; promise: Promise<IGDBSearchCacheValue>; expiresAt: number };
+
+const igdbSearchCache = new Map<string, IGDBSearchCacheEntry>();
+const IGDB_SEARCH_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+
 export function resetIGDBTokenCacheForTests() {
   if (process.env.NODE_ENV !== 'test') return;
   cachedToken = null;
 }
+
+export function resetIGDBSearchCacheForTests() {
+  if (process.env.NODE_ENV !== 'test') return;
+  igdbSearchCache.clear();
+}
+
+const getCachedIGDBSearch = async (
+  key: string,
+  factory: () => Promise<IGDBSearchCacheValue>,
+): Promise<IGDBSearchCacheValue> => {
+  const now = Date.now();
+  const existing = igdbSearchCache.get(key);
+
+  if (existing && existing.expiresAt > now) {
+    if (existing.kind === 'value') return existing.value;
+    return existing.promise;
+  }
+
+  const expiresAt = now + IGDB_SEARCH_CACHE_TTL_MS;
+  const promise = factory()
+    .then((value) => {
+      igdbSearchCache.set(key, { kind: 'value', value, expiresAt });
+      return value;
+    })
+    .catch((error: unknown) => {
+      igdbSearchCache.delete(key);
+      throw error;
+    });
+
+  igdbSearchCache.set(key, { kind: 'promise', promise, expiresAt });
+  return promise;
+};
 
 export interface IGDBGame {
   id: number;
@@ -361,16 +402,21 @@ export async function getRecentlyReleasedGames(
  * Search for games by name
  */
 export async function searchGameByName(name: string): Promise<IGDBGame | null> {
-  const query = `
-    search "${name}";
-    fields name, cover.url;
-    limit 1;
-  `;
+  const normalizedName = name.trim().toLowerCase();
+  if (!normalizedName) return null;
 
-  const results = await igdbRequest<IGDBGame[]>('games', query);
-  if (results.length === 0) return null;
+  return getCachedIGDBSearch(`search:${normalizedName}`, async () => {
+    const query = `
+      search "${name}";
+      fields name, cover.url;
+      limit 1;
+    `;
 
-  return results[0];
+    const results = await igdbRequest<IGDBGame[]>('games', query);
+    if (results.length === 0) return null;
+
+    return results[0];
+  });
 }
 
 /**

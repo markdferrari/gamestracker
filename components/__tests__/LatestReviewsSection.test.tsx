@@ -1,11 +1,14 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { LatestReviewsSection } from '../LatestReviewsSection';
-import * as opencriticLib from '@/lib/opencritic';
 
-// Mock the opencritic library
-jest.mock('@/lib/opencritic');
+jest.mock('next/headers', () => ({
+  headers: async () =>
+    new Headers({ host: 'localhost:3000', 'x-forwarded-proto': 'http' }),
+}));
 
 describe('LatestReviewsSection', () => {
+  const originalFetch = globalThis.fetch;
+
   const mockReviews = [
     {
       id: 1,
@@ -32,11 +35,17 @@ describe('LatestReviewsSection', () => {
   ];
 
   afterEach(() => {
+    globalThis.fetch = originalFetch;
     jest.clearAllMocks();
   });
 
   it('should render section title', async () => {
-    jest.spyOn(opencriticLib, 'getReviewedThisWeek').mockResolvedValue(mockReviews);
+    globalThis.fetch = jest.fn<Promise<Response>, [RequestInfo | URL, RequestInit | undefined]>()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockReviews,
+      } as Response);
 
     render(await LatestReviewsSection());
 
@@ -44,7 +53,12 @@ describe('LatestReviewsSection', () => {
   });
 
   it('should render reviews from OpenCritic API', async () => {
-    jest.spyOn(opencriticLib, 'getReviewedThisWeek').mockResolvedValue(mockReviews);
+    globalThis.fetch = jest.fn<Promise<Response>, [RequestInfo | URL, RequestInit | undefined]>()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockReviews,
+      } as Response);
 
     render(await LatestReviewsSection());
 
@@ -54,16 +68,30 @@ describe('LatestReviewsSection', () => {
     });
   });
 
-  it('should call getReviewedThisWeek with limit of 10', async () => {
-    const mockGetReviewed = jest.spyOn(opencriticLib, 'getReviewedThisWeek').mockResolvedValue(mockReviews);
+  it('should call the internal API with limit=10', async () => {
+    const fetchMock = jest.fn<Promise<Response>, [RequestInfo | URL, RequestInit | undefined]>()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockReviews,
+      } as Response);
+
+    globalThis.fetch = fetchMock;
 
     render(await LatestReviewsSection());
 
-    expect(mockGetReviewed).toHaveBeenCalledWith(10);
+    const requestUrl = fetchMock.mock.calls[0]?.[0]?.toString() ?? '';
+    expect(requestUrl).toContain('/api/opencritic/reviewed-this-week');
+    expect(requestUrl).toContain('limit=10');
   });
 
   it('should render ReviewCarousel with review cards', async () => {
-    jest.spyOn(opencriticLib, 'getReviewedThisWeek').mockResolvedValue(mockReviews);
+    globalThis.fetch = jest.fn<Promise<Response>, [RequestInfo | URL, RequestInit | undefined]>()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockReviews,
+      } as Response);
 
     const { container } = render(await LatestReviewsSection());
 
@@ -74,7 +102,12 @@ describe('LatestReviewsSection', () => {
   });
 
   it('should handle empty reviews gracefully', async () => {
-    jest.spyOn(opencriticLib, 'getReviewedThisWeek').mockResolvedValue([]);
+    globalThis.fetch = jest.fn<Promise<Response>, [RequestInfo | URL, RequestInit | undefined]>()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => [],
+      } as Response);
 
     render(await LatestReviewsSection());
 
@@ -83,7 +116,8 @@ describe('LatestReviewsSection', () => {
   });
 
   it('should handle API errors gracefully', async () => {
-    jest.spyOn(opencriticLib, 'getReviewedThisWeek').mockRejectedValue(new Error('API Error'));
+    globalThis.fetch = jest.fn<Promise<Response>, [RequestInfo | URL, RequestInit | undefined]>()
+      .mockRejectedValueOnce(new Error('API Error'));
 
     render(await LatestReviewsSection());
 
