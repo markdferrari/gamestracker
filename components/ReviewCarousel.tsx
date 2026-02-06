@@ -81,6 +81,7 @@ export function ReviewCarousel({ reviews }: ReviewCarouselProps) {
             };
 
             const rawImageUrl = 
+              review.igdbCoverUrl ||
               review.images.box?.sm || 
               review.images.box?.og || 
               review.images.banner?.sm || 

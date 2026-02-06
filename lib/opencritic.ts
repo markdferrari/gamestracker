@@ -1,5 +1,7 @@
 // OpenCritic API helpers for fetching game reviews
 
+import { searchGameByName } from './igdb';
+
 const OPENCRITIC_BASE_URL = 'https://opencritic-api.p.rapidapi.com';
 
 export interface OpenCriticReview {
@@ -14,6 +16,7 @@ export interface OpenCriticReview {
   numReviews: number;
   percentRecommended?: number;
   releaseDate?: string;
+  igdbCoverUrl?: string; // Added for fallback to IGDB images
 }
 
 /**
@@ -48,9 +51,26 @@ export async function getReviewedThisWeek(
 
   const data: OpenCriticReview[] = await response.json();
 
+  // Enrich with IGDB cover images
+  const enrichedData = await Promise.all(
+    data.map(async (game) => {
+      try {
+        const igdbGame = await searchGameByName(game.name);
+        if (igdbGame?.cover?.url) {
+          // Convert thumbnail URL to cover_big (264x352)
+          const coverUrl = igdbGame.cover.url.replace('t_thumb', 't_cover_big');
+          return { ...game, igdbCoverUrl: coverUrl };
+        }
+      } catch (error) {
+        console.error(`Failed to fetch IGDB cover for ${game.name}:`, error);
+      }
+      return game;
+    })
+  );
+
   if (limit && limit > 0) {
-    return data.slice(0, limit);
+    return enrichedData.slice(0, limit);
   }
 
-  return data;
+  return enrichedData;
 }

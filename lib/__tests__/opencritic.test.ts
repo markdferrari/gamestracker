@@ -1,4 +1,9 @@
 import { getReviewedThisWeek } from '../opencritic';
+import * as igdbLib from '../igdb';
+
+jest.mock('../igdb', () => ({
+  searchGameByName: jest.fn(),
+}));
 
 describe('getReviewedThisWeek', () => {
   const originalFetch = globalThis.fetch;
@@ -40,6 +45,13 @@ describe('getReviewedThisWeek', () => {
       },
     ];
 
+    // Mock IGDB search
+    jest.spyOn(igdbLib, 'searchGameByName').mockResolvedValue({
+      id: 123,
+      name: 'Test Game',
+      cover: { url: '//images.igdb.com/igdb/image/upload/t_thumb/cover1.jpg' },
+    });
+
     const fetchMock = jest.fn<
       Promise<Response>,
       [RequestInfo | URL, RequestInit | undefined]
@@ -63,9 +75,9 @@ describe('getReviewedThisWeek', () => {
       }
     );
 
-    expect(result).toEqual(mockResponse);
     expect(result).toHaveLength(2);
     expect(result[0].name).toBe('Test Game 1');
+    expect(result[0].igdbCoverUrl).toBe('//images.igdb.com/igdb/image/upload/t_cover_big/cover1.jpg');
     expect(result[0].topCriticScore).toBe(85);
   });
 
@@ -80,6 +92,9 @@ describe('getReviewedThisWeek', () => {
         numReviews: 5,
       },
     ];
+
+    // Mock IGDB search returning null
+    jest.spyOn(igdbLib, 'searchGameByName').mockResolvedValue(null);
 
     const fetchMock = jest.fn<
       Promise<Response>,

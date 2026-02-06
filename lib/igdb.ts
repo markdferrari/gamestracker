@@ -296,6 +296,22 @@ export async function getRecentlyReleasedGames(platformId: number = 167): Promis
 }
 
 /**
+ * Search for games by name
+ */
+export async function searchGameByName(name: string): Promise<IGDBGame | null> {
+  const query = `
+    search "${name}";
+    fields name, cover.url;
+    limit 1;
+  `;
+
+  const results = await igdbRequest<IGDBGame[]>('games', query);
+  if (results.length === 0) return null;
+
+  return results[0];
+}
+
+/**
  * Fetch a single game by ID
  */
 export async function getGameById(id: number): Promise<IGDBGame | null> {

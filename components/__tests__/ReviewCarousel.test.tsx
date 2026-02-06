@@ -31,6 +31,7 @@ describe('ReviewCarousel', () => {
       tier: 'Mighty',
       topCriticScore: 87.6,
       numReviews: 50,
+      igdbCoverUrl: '//images.igdb.com/igdb/image/upload/t_cover_big/cover1.jpg',
     },
     {
       id: 2,
@@ -41,6 +42,7 @@ describe('ReviewCarousel', () => {
       tier: 'Strong',
       topCriticScore: 75.3,
       numReviews: 30,
+      igdbCoverUrl: '//images.igdb.com/igdb/image/upload/t_cover_big/cover2.jpg',
     },
   ];
 
@@ -77,5 +79,7 @@ describe('ReviewCarousel', () => {
     render(<ReviewCarousel reviews={mockReviews} />);
     const images = screen.getAllByRole('img');
     expect(images.length).toBeGreaterThan(0);
+    // Should use IGDB cover URL first
+    expect(images[0]).toHaveAttribute('src', '//images.igdb.com/igdb/image/upload/t_cover_big/cover1.jpg');
   });
 });
