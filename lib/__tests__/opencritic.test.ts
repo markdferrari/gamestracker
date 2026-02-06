@@ -4,11 +4,6 @@ import {
   resetOpenCriticCacheForTests,
   resetOpenCriticRateLimiterForTests,
 } from '../opencritic';
-import * as igdbLib from '../igdb';
-
-jest.mock('../igdb', () => ({
-  searchGameByName: jest.fn(),
-}));
 
 describe('getReviewedThisWeek', () => {
   const originalFetch = globalThis.fetch;
@@ -52,13 +47,6 @@ describe('getReviewedThisWeek', () => {
       },
     ];
 
-    // Mock IGDB search
-    jest.spyOn(igdbLib, 'searchGameByName').mockResolvedValue({
-      id: 123,
-      name: 'Test Game',
-      cover: { url: '//images.igdb.com/igdb/image/upload/t_thumb/cover1.jpg' },
-    });
-
     const fetchMock = jest.fn<
       Promise<Response>,
       [RequestInfo | URL, RequestInit | undefined]
@@ -79,13 +67,12 @@ describe('getReviewedThisWeek', () => {
           'X-RapidAPI-Key': 'test-rapid-api-key',
           'X-RapidAPI-Host': 'opencritic-api.p.rapidapi.com',
         },
-        next: { revalidate: 60 * 10 },
+        next: { revalidate: 60 * 60 * 24 * 7 },
       }
     );
 
     expect(result).toHaveLength(2);
     expect(result[0].name).toBe('Test Game 1');
-    expect(result[0].igdbCoverUrl).toBe('//images.igdb.com/igdb/image/upload/t_cover_big/cover1.jpg');
     expect(result[0].topCriticScore).toBe(85);
   });
 
@@ -100,9 +87,6 @@ describe('getReviewedThisWeek', () => {
         numReviews: 5,
       },
     ];
-
-    // Mock IGDB search returning null
-    jest.spyOn(igdbLib, 'searchGameByName').mockResolvedValue(null);
 
     const fetchMock = jest.fn<
       Promise<Response>,
@@ -156,7 +140,6 @@ describe('getReviewedThisWeek', () => {
 
     try {
       process.env.RAPID_API_KEY = 'test-rapid-api-key';
-      jest.spyOn(igdbLib, 'searchGameByName').mockResolvedValue(null);
 
       const fetchMock = jest
         .fn<Promise<Response>, [RequestInfo | URL, RequestInit | undefined]>()
@@ -184,6 +167,47 @@ describe('getReviewedThisWeek', () => {
 
       // Advance time for Retry-After (1s).
       await jest.advanceTimersByTimeAsync(1000);
+
+      const result = await promise;
+      expect(result).toEqual([]);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('retries when API returns 503', async () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(0));
+
+    try {
+      process.env.RAPID_API_KEY = 'test-rapid-api-key';
+
+      const fetchMock = jest
+        .fn<Promise<Response>, [RequestInfo | URL, RequestInit | undefined]>()
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 503,
+          statusText: 'Service Unavailable',
+          headers: {
+            get: () => null,
+          },
+        } as unknown as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => [],
+        } as Response);
+
+      globalThis.fetch = fetchMock;
+
+      const promise = getReviewedThisWeek();
+
+      await jest.advanceTimersByTimeAsync(0);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+
+      await jest.advanceTimersByTimeAsync(1000);
+      await jest.runOnlyPendingTimersAsync();
 
       const result = await promise;
       expect(result).toEqual([]);
@@ -246,8 +270,6 @@ describe('getReviewedThisWeek', () => {
       },
     ];
 
-    jest.spyOn(igdbLib, 'searchGameByName').mockResolvedValue(null);
-
     const fetchMock = jest.fn<
       Promise<Response>,
       [RequestInfo | URL, RequestInit | undefined]
@@ -309,13 +331,6 @@ describe('getRecentlyReleased', () => {
       },
     ];
 
-    // Mock IGDB search
-    jest.spyOn(igdbLib, 'searchGameByName').mockResolvedValue({
-      id: 123,
-      name: 'Test Game',
-      cover: { url: '//images.igdb.com/igdb/image/upload/t_thumb/cover1.jpg' },
-    });
-
     const fetchMock = jest.fn<
       Promise<Response>,
       [RequestInfo | URL, RequestInit | undefined]
@@ -336,7 +351,7 @@ describe('getRecentlyReleased', () => {
           'X-RapidAPI-Key': 'test-rapid-api-key',
           'X-RapidAPI-Host': 'opencritic-api.p.rapidapi.com',
         },
-        next: { revalidate: 60 * 10 },
+        next: { revalidate: 60 * 60 * 24 * 7 },
       }
     );
 
@@ -357,9 +372,6 @@ describe('getRecentlyReleased', () => {
         numReviews: 5,
       },
     ];
-
-    // Mock IGDB search returning null
-    jest.spyOn(igdbLib, 'searchGameByName').mockResolvedValue(null);
 
     const fetchMock = jest.fn<
       Promise<Response>,
@@ -405,7 +417,7 @@ describe('getRecentlyReleased', () => {
     );
   });
 
-  it('should respect the limit parameter', async () => {
+  it('should cap the limit parameter at 6', async () => {
     process.env.RAPID_API_KEY = 'test-rapid-api-key';
 
     const mockResponse = Array.from({ length: 20 }, (_, i) => ({
@@ -414,9 +426,6 @@ describe('getRecentlyReleased', () => {
       images: {},
       numReviews: 10,
     }));
-
-    // Mock IGDB search
-    jest.spyOn(igdbLib, 'searchGameByName').mockResolvedValue(null);
 
     const fetchMock = jest.fn<
       Promise<Response>,
@@ -431,8 +440,8 @@ describe('getRecentlyReleased', () => {
 
     const result = await getRecentlyReleased(10);
 
-    expect(result).toHaveLength(10);
+    expect(result).toHaveLength(6);
     expect(result[0].name).toBe('Game 1');
-    expect(result[9].name).toBe('Game 10');
+    expect(result[5].name).toBe('Game 6');
   });
 });

@@ -14,7 +14,7 @@ export function GameCard({ game }: GameCardProps) {
     ? `/api/image?url=${encodeURIComponent(
         `https:${game.cover.url.replace('t_thumb', 't_cover_big')}`,
       )}`
-    : '/placeholder-game.png';
+    : '/game-placeholder.svg';
 
   // Get the earliest release date for this game
   const releaseDate = game.release_dates?.[0]?.date || game.first_release_date;

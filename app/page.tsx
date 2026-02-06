@@ -16,7 +16,7 @@ export default async function Home({ searchParams }: PageProps) {
   const platformParam = params.platform || '1';
   const platformFilter =
     platformParam === 'pc'
-      ? ({ type: 'platformType', id: 6 } as const)
+      ? ({ type: 'family', id: 4 } as const)
       : ({ type: 'family', id: parseInt(platformParam, 10) || 1 } as const);
   const view = params.view || 'upcoming';
   
@@ -94,7 +94,7 @@ export default async function Home({ searchParams }: PageProps) {
 
         {/* Games Grid */}
         {games.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {games.map((game) => (
               <GameCard key={game.id} game={game} />
             ))}

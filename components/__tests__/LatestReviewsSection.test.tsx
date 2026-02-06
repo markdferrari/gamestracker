@@ -1,9 +1,6 @@
+import '@testing-library/jest-dom';
 import { render, screen, waitFor } from '@testing-library/react';
 import { LatestReviewsSection } from '../LatestReviewsSection';
-import * as opencriticLib from '@/lib/opencritic';
-
-// Mock the opencritic library
-jest.mock('@/lib/opencritic');
 
 describe('LatestReviewsSection', () => {
   const mockReviews = [
@@ -31,65 +28,79 @@ describe('LatestReviewsSection', () => {
     },
   ];
 
-  afterEach(() => {
-    jest.clearAllMocks();
+  class MockIntersectionObserver {
+    private callback: IntersectionObserverCallback;
+
+    constructor(callback: IntersectionObserverCallback) {
+      this.callback = callback;
+    }
+
+    observe = jest.fn();
+    unobserve = jest.fn();
+    disconnect = jest.fn();
+
+    triggerIntersect(isIntersecting: boolean) {
+      const entry = [{ isIntersecting } as IntersectionObserverEntry];
+      this.callback(entry, this as unknown as IntersectionObserver);
+    }
+  }
+
+  let intersectionObserver: MockIntersectionObserver | null = null;
+  let fetchMock: jest.MockedFunction<typeof fetch>;
+
+  beforeEach(() => {
+    fetchMock = jest.fn();
+    global.fetch = fetchMock as typeof fetch;
+
+    window.IntersectionObserver = jest
+      .fn((callback: IntersectionObserverCallback) => {
+        const observer = new MockIntersectionObserver(callback);
+        intersectionObserver = observer;
+        return observer as unknown as IntersectionObserver;
+      }) as unknown as typeof IntersectionObserver;
   });
 
-  it('should render section title', async () => {
-    jest.spyOn(opencriticLib, 'getReviewedThisWeek').mockResolvedValue(mockReviews);
+  afterEach(() => {
+    jest.resetAllMocks();
+    intersectionObserver = null;
+  });
 
-    render(await LatestReviewsSection());
+  it('should render section title without fetching initially', () => {
+    render(<LatestReviewsSection />);
 
     expect(screen.getByText('Latest Reviews')).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('should render reviews from OpenCritic API', async () => {
-    jest.spyOn(opencriticLib, 'getReviewedThisWeek').mockResolvedValue(mockReviews);
+  it('should fetch and render reviews after intersection', async () => {
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ reviews: mockReviews }), { status: 200 })
+    );
 
-    render(await LatestReviewsSection());
+    const { container } = render(<LatestReviewsSection />);
+
+    intersectionObserver?.triggerIntersect(true);
 
     await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith('/api/opencritic/reviewed-this-week', {
+        cache: 'no-store',
+      });
       expect(screen.getAllByText('Game One').length).toBeGreaterThan(0);
       expect(screen.getAllByText('Game Two').length).toBeGreaterThan(0);
-    });
-  });
-
-  it('should call getReviewedThisWeek with limit of 10', async () => {
-    const mockGetReviewed = jest.spyOn(opencriticLib, 'getReviewedThisWeek').mockResolvedValue(mockReviews);
-
-    render(await LatestReviewsSection());
-
-    expect(mockGetReviewed).toHaveBeenCalledWith(10);
-  });
-
-  it('should render ReviewCarousel with review cards', async () => {
-    jest.spyOn(opencriticLib, 'getReviewedThisWeek').mockResolvedValue(mockReviews);
-
-    const { container } = render(await LatestReviewsSection());
-
-    await waitFor(() => {
       const carousel = container.querySelector('.hide-scrollbar');
       expect(carousel).toBeInTheDocument();
     });
   });
 
-  it('should handle empty reviews gracefully', async () => {
-    jest.spyOn(opencriticLib, 'getReviewedThisWeek').mockResolvedValue([]);
+  it('should render empty state on fetch error', async () => {
+    fetchMock.mockRejectedValue(new Error('API Error'));
 
-    render(await LatestReviewsSection());
+    render(<LatestReviewsSection />);
 
-    expect(screen.getByText('Latest Reviews')).toBeInTheDocument();
-    expect(screen.queryByText('Game One')).not.toBeInTheDocument();
-  });
+    intersectionObserver?.triggerIntersect(true);
 
-  it('should handle API errors gracefully', async () => {
-    jest.spyOn(opencriticLib, 'getReviewedThisWeek').mockRejectedValue(new Error('API Error'));
-
-    render(await LatestReviewsSection());
-
-    // Should still render the section title
-    expect(screen.getByText('Latest Reviews')).toBeInTheDocument();
-    // Should not show any games
-    expect(screen.queryByText('Game One')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('No reviews available')).toBeInTheDocument();
+    });
   });
 });
