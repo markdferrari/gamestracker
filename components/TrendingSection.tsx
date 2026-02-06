@@ -1,7 +1,8 @@
+'use client';
+
 import type { TrendingGame } from '@/lib/opencritic';
 import { TrendingCarousel } from './TrendingCarousel';
 import { Flame } from 'lucide-react';
-'use client';
 
 import { useEffect, useMemo, useState } from 'react';
 
