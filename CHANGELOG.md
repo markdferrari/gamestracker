@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/markdferrari/gamestracker/compare/v1.2.0...v1.2.1) (2026-02-06)
+
+
+### Bug Fixes
+
+* release workflow ([#11](https://github.com/markdferrari/gamestracker/issues/11)) ([8483cda](https://github.com/markdferrari/gamestracker/commit/8483cda7389d633747bfd6282b9106f0b3fc7e65))
+
 # [1.2.0](https://github.com/markdferrari/gamestracker/compare/v1.1.0...v1.2.0) (2026-02-05)
 
 
