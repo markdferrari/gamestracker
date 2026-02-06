@@ -50,7 +50,12 @@ Create a `.env` file in the project root with:
 CERTIFICATE_ARN=arn:aws:acm:eu-west-1:... # From terraform output
 IGDB_CLIENT_ID=your_client_id
 IGDB_CLIENT_SECRET=your_client_secret
+RAPID_API_KEY=your_rapidapi_key
 ```
+
+**Required Variables:**
+- **IGDB_CLIENT_ID** / **IGDB_CLIENT_SECRET**: Twitch OAuth credentials for IGDB API
+- **RAPID_API_KEY**: RapidAPI key for OpenCritic API (required for Latest Reviews and Trending features)
 
 ### Deploy to Production
 

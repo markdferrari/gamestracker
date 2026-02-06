@@ -7,11 +7,11 @@ Additional filters - genre, developer/studio
 ## Feat: improved UI
 
 Are there off-the-shelf components we could use?
-Can mobile display be improved?
 Is the UI as intuitive as it should be?
 The logo is rubbish - I think we should remove it and have the site title in a better font instead.
 Light/dark mode toggle should use sun/moon icons instead of words.
 Standard font across the whole project
+Mobile display is poor - needs to be completely refactored.
 
 ## Feat: Opencritic links
 

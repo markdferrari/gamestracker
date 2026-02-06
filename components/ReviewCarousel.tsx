@@ -28,11 +28,11 @@ export function ReviewCarousel({ reviews }: ReviewCarouselProps) {
       scrollPosition += 1;
       
       // Reset to start when reaching the end
-      if (scrollPosition >= scrollContainer.scrollHeight / 2) {
+      if (scrollPosition >= scrollContainer.scrollWidth / 2) {
         scrollPosition = 0;
       }
       
-      scrollContainer.scrollTop = scrollPosition;
+      scrollContainer.scrollLeft = scrollPosition;
     };
 
     const intervalId = setInterval(scroll, 50);
@@ -49,19 +49,19 @@ export function ReviewCarousel({ reviews }: ReviewCarouselProps) {
 
   return (
     <div 
-      className="relative h-full overflow-hidden"
+      className="relative w-full overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
       <div
         ref={scrollRef}
-        className="hide-scrollbar h-full overflow-y-scroll"
+        className="hide-scrollbar w-full overflow-x-scroll"
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
         }}
       >
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-row gap-4">
           {duplicatedReviews.map((review, index) => {
             const slug = review.name.toLowerCase().replace(/\s+/g, '-');
             const openCriticUrl = `https://opencritic.com/game/${review.id}/${slug}`;
@@ -97,9 +97,9 @@ export function ReviewCarousel({ reviews }: ReviewCarouselProps) {
                 rel="noopener noreferrer"
                 className="group block"
               >
-                <div className="flex gap-3 rounded-lg border border-zinc-200/70 bg-white/80 p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-800/70 dark:bg-zinc-900/80">
+                <div className="flex flex-col gap-3 rounded-lg border border-zinc-200/70 bg-white/80 p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-800/70 dark:bg-zinc-900/80 min-w-fit">
                   {/* Cover Image */}
-                  <div className="relative h-24 w-16 flex-shrink-0 overflow-hidden rounded bg-zinc-100 dark:bg-zinc-800">
+                  <div className="relative h-40 w-28 flex-shrink-0 overflow-hidden rounded bg-zinc-100 dark:bg-zinc-800">
                     {rawImageUrl ? (
                       <Image
                         src={rawImageUrl}
@@ -117,7 +117,7 @@ export function ReviewCarousel({ reviews }: ReviewCarouselProps) {
                   </div>
 
                   {/* Content */}
-                  <div className="flex min-w-0 flex-1 flex-col justify-between">
+                  <div className="flex min-w-0 flex-col justify-between gap-2">
                     <div>
                       <h3 className="line-clamp-2 text-sm font-bold text-zinc-900 dark:text-zinc-100">
                         {review.name}
