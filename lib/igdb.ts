@@ -2,6 +2,11 @@
 
 let cachedToken: { access_token: string; expires_at: number } | null = null;
 
+export function resetIGDBTokenCacheForTests() {
+  if (process.env.NODE_ENV !== 'test') return;
+  cachedToken = null;
+}
+
 export interface IGDBGame {
   id: number;
   name: string;
@@ -18,7 +23,7 @@ export interface IGDBGame {
     date: number;
     date_format?: number;
     status?: number;
-    platform: { id: number; name: string };
+    platform: { id: number; name: string; platform_family?: number; platform_type?: number };
   }>;
   websites?: Array<{
     category: number;
@@ -38,7 +43,7 @@ interface IGDBReleaseDate {
   human?: string;
   date_format?: number;
   status?: number;
-  platform?: { id: number; name: string };
+  platform?: { id: number; name: string; platform_family?: number; platform_type?: number };
   game: {
     id: number;
     name: string;
@@ -50,6 +55,25 @@ interface IGDBReleaseDate {
     screenshots?: Array<{ url: string }>;
   };
 }
+
+export type IGDBPlatformFilter =
+  | { type: 'family'; id: number }
+  | { type: 'platform'; id: number }
+  | { type: 'platformType'; id: number };
+
+const normalizePlatformFilter = (
+  filter: IGDBPlatformFilter | number | undefined,
+): IGDBPlatformFilter => {
+  if (typeof filter === 'number') {
+    return { type: 'family', id: filter };
+  }
+
+  if (!filter) {
+    return { type: 'family', id: 1 };
+  }
+
+  return filter;
+};
 
 /**
  * Get Twitch OAuth token for IGDB API access
@@ -122,16 +146,26 @@ async function igdbRequest<T>(endpoint: string, body: string): Promise<T> {
 /**
  * Fetch upcoming games for a specific platform
  */
-export async function getUpcomingPSGames(platformId: number = 167): Promise<IGDBGame[]> {
+export async function getUpcomingPSGames(
+  platform: IGDBPlatformFilter | number = { type: 'family', id: 1 },
+): Promise<IGDBGame[]> {
+  const platformFilter = normalizePlatformFilter(platform);
   const currentTimestamp = Math.floor(Date.now() / 1000);
   const sixMonthsAhead = currentTimestamp + (60 * 60 * 24 * 180); // 6 months
 
+  const platformWhere =
+    platformFilter.type === 'family'
+      ? `platform.platform_family = (${platformFilter.id})`
+      : platformFilter.type === 'platform'
+        ? `platform = (${platformFilter.id})`
+        : `platform.platform_type = (${platformFilter.id})`;
+
   const query = `
-    fields date, human, date_format, status, platform.id, platform.name,
+    fields date, human, date_format, status, platform.id, platform.name, platform.platform_family, platform.platform_type,
       game.id, game.name, game.summary, game.cover.url, game.first_release_date,
       game.game_status, game.platforms.name, game.screenshots.url;
-    where game.platforms = (${platformId}) & date != null & date > ${currentTimestamp} & date <= ${sixMonthsAhead}
-      & platform = ${platformId};
+    where date != null & date > ${currentTimestamp} & date <= ${sixMonthsAhead}
+      & ${platformWhere};
     sort date asc;
     limit 150;
   `;
@@ -168,7 +202,12 @@ export async function getUpcomingPSGames(platformId: number = 167): Promise<IGDB
       date: releaseDate.date,
       date_format: releaseDate.date_format,
       status: releaseDate.status,
-      platform: releaseDate.platform ?? { id: platformId, name: '' },
+      platform: {
+        id: releaseDate.platform?.id ?? 0,
+        name: releaseDate.platform?.name ?? '',
+        platform_family: releaseDate.platform?.platform_family,
+        platform_type: releaseDate.platform?.platform_type,
+      },
     });
 
     gamesById.set(game.id, game);
@@ -181,7 +220,11 @@ export async function getUpcomingPSGames(platformId: number = 167): Promise<IGDB
     const dates = game.release_dates
       .filter(
         (rd) =>
-          rd.platform?.id === platformId &&
+          (platformFilter.type === 'family'
+            ? rd.platform?.platform_family === platformFilter.id
+            : platformFilter.type === 'platform'
+              ? rd.platform?.id === platformFilter.id
+              : rd.platform?.platform_type === platformFilter.id) &&
           typeof rd.date === 'number' &&
           rd.date > currentTimestamp &&
           rd.date <= sixMonthsAhead &&
@@ -214,16 +257,26 @@ export async function getUpcomingPSGames(platformId: number = 167): Promise<IGDB
 /**
  * Fetch recently released games for a specific platform (past 60 days)
  */
-export async function getRecentlyReleasedGames(platformId: number = 167): Promise<IGDBGame[]> {
+export async function getRecentlyReleasedGames(
+  platform: IGDBPlatformFilter | number = { type: 'family', id: 1 },
+): Promise<IGDBGame[]> {
+  const platformFilter = normalizePlatformFilter(platform);
   const currentTimestamp = Math.floor(Date.now() / 1000);
   const sixtyDaysAgo = currentTimestamp - (60 * 24 * 60 * 60); // 60 days in seconds
 
+  const platformWhere =
+    platformFilter.type === 'family'
+      ? `platform.platform_family = (${platformFilter.id})`
+      : platformFilter.type === 'platform'
+        ? `platform = (${platformFilter.id})`
+        : `platform.platform_type = (${platformFilter.id})`;
+
   const query = `
-    fields date, human, date_format, status, platform.id, platform.name,
+    fields date, human, date_format, status, platform.id, platform.name, platform.platform_family, platform.platform_type,
       game.id, game.name, game.summary, game.cover.url, game.first_release_date,
       game.game_status, game.platforms.name, game.screenshots.url;
-    where game.platforms = (${platformId}) & date != null & date >= ${sixtyDaysAgo} & date <= ${currentTimestamp}
-      & platform = ${platformId};
+    where date != null & date >= ${sixtyDaysAgo} & date <= ${currentTimestamp}
+      & ${platformWhere};
     sort date desc;
     limit 100;
   `;
@@ -254,7 +307,12 @@ export async function getRecentlyReleasedGames(platformId: number = 167): Promis
       date: releaseDate.date,
       date_format: releaseDate.date_format,
       status: releaseDate.status,
-      platform: releaseDate.platform ?? { id: platformId, name: '' },
+      platform: {
+        id: releaseDate.platform?.id ?? 0,
+        name: releaseDate.platform?.name ?? '',
+        platform_family: releaseDate.platform?.platform_family,
+        platform_type: releaseDate.platform?.platform_type,
+      },
     });
 
     gamesById.set(game.id, game);
@@ -267,7 +325,11 @@ export async function getRecentlyReleasedGames(platformId: number = 167): Promis
     const dates = game.release_dates
       .filter(
         (rd) =>
-          rd.platform?.id === platformId &&
+          (platformFilter.type === 'family'
+            ? rd.platform?.platform_family === platformFilter.id
+            : platformFilter.type === 'platform'
+              ? rd.platform?.id === platformFilter.id
+              : rd.platform?.platform_type === platformFilter.id) &&
           typeof rd.date === 'number' &&
           rd.date >= sixtyDaysAgo &&
           rd.date <= currentTimestamp,
@@ -352,5 +414,6 @@ export function formatReleaseDate(timestamp: number): string {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
+    timeZone: 'UTC',
   });
 }

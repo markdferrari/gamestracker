@@ -10,6 +10,7 @@ import { ScreenshotGallery } from '@/components/ScreenshotGallery';
 
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ oc?: string }>;
 }
 
 const formatReleaseBadge = (unixSeconds: number) => {
@@ -29,8 +30,9 @@ const formatReleaseBadge = (unixSeconds: number) => {
   return `${Math.abs(diffDays)} days ago`;
 };
 
-export default async function GameDetailPage({ params }: PageProps) {
+export default async function GameDetailPage({ params, searchParams }: PageProps) {
   const { id } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const gameId = parseInt(id, 10);
 
   if (isNaN(gameId)) {
@@ -151,7 +153,15 @@ export default async function GameDetailPage({ params }: PageProps) {
 
             {/* Reviews & Ratings */}
             <div className="mt-6">
-              <ReviewSection game={game} />
+              <ReviewSection
+                game={game}
+                openCriticIdFromQuery={(() => {
+                  const raw = resolvedSearchParams?.oc;
+                  if (!raw) return null;
+                  const parsed = parseInt(raw, 10);
+                  return Number.isNaN(parsed) ? null : parsed;
+                })()}
+              />
             </div>
 
             {/* External Links */}

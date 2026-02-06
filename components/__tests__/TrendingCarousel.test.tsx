@@ -24,6 +24,7 @@ describe('TrendingCarousel', () => {
   const mockGames: TrendingGame[] = [
     {
       id: 1,
+      igdbId: 111,
       name: 'Game One',
       images: {
         box: { sm: 'https://example.com/game1.jpg' },
@@ -37,6 +38,7 @@ describe('TrendingCarousel', () => {
     },
     {
       id: 2,
+      igdbId: 222,
       name: 'Game Two',
       images: {
         box: { sm: 'https://example.com/game2.jpg' },
@@ -76,7 +78,26 @@ describe('TrendingCarousel', () => {
   it('should link to OpenCritic page', () => {
     render(<TrendingCarousel games={mockGames} />);
     const links = screen.getAllByRole('link');
-    expect(links[0]).toHaveAttribute('href', 'https://opencritic.com/game/1/game-one');
+    expect(links[0]).toHaveAttribute('href', '/game/111?oc=1');
+  });
+
+  it('should fall back to OpenCritic link when igdbId is missing', () => {
+    const gamesWithoutIgdbId: TrendingGame[] = [
+      {
+        id: 9,
+        name: 'No Match Game',
+        images: { box: { sm: 'https://example.com/game9.jpg' } },
+        platforms: [{ id: 6, name: 'PC' }],
+        releaseDate: '2026-02-05',
+        topCriticScore: 78.1,
+        numReviews: 22,
+        percentRecommended: 75,
+      },
+    ];
+
+    render(<TrendingCarousel games={gamesWithoutIgdbId} />);
+    const links = screen.getAllByRole('link');
+    expect(links[0]).toHaveAttribute('href', 'https://opencritic.com/game/9/no-match-game');
   });
 
   it('should render cover images', () => {

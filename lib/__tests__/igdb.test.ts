@@ -1,4 +1,4 @@
-import { formatReleaseDate, getGameById, getRecentlyReleasedGames, getUpcomingPSGames } from '../igdb';
+import { formatReleaseDate, getGameById, getRecentlyReleasedGames, getUpcomingPSGames, resetIGDBTokenCacheForTests } from '../igdb';
 
 describe('formatReleaseDate', () => {
   it('should format Unix timestamp to human-readable date', () => {
@@ -9,15 +9,15 @@ describe('formatReleaseDate', () => {
   });
 
   it('should handle different months', () => {
-    // December 25, 2025 at 00:00:00 UTC = 1766793600
-    const timestamp = 1766793600;
+    // December 25, 2025 at 00:00:00 UTC = 1766620800
+    const timestamp = 1766620800;
     const result = formatReleaseDate(timestamp);
     expect(result).toBe('December 25, 2025');
   });
 
   it('should format dates correctly across years', () => {
-    // March 1, 2026 at 00:00:00 UTC = 1772524800
-    const timestamp = 1772524800;
+    // March 1, 2026 at 00:00:00 UTC = 1772323200
+    const timestamp = 1772323200;
     const result = formatReleaseDate(timestamp);
     expect(result).toBe('March 1, 2026');
   });
@@ -32,6 +32,7 @@ describe('getUpcomingPSGames', () => {
     globalThis.fetch = originalFetch;
     process.env.IGDB_CLIENT_ID = originalClientId;
     process.env.IGDB_CLIENT_SECRET = originalClientSecret;
+    resetIGDBTokenCacheForTests();
     jest.restoreAllMocks();
   });
 
@@ -85,7 +86,7 @@ describe('getUpcomingPSGames', () => {
           human: 'March 1, 2026',
           date_format: 0,
           status: 1,
-          platform: { id: 167, name: 'PlayStation 5' },
+          platform: { id: 167, name: 'PlayStation 5', platform_family: 1 },
           game: gameA,
         },
         {
@@ -94,7 +95,7 @@ describe('getUpcomingPSGames', () => {
           human: 'March 5, 2026',
           date_format: 0,
           status: 1,
-          platform: { id: 167, name: 'PlayStation 5' },
+          platform: { id: 167, name: 'PlayStation 5', platform_family: 1 },
           game: gameA,
         },
         {
@@ -103,7 +104,7 @@ describe('getUpcomingPSGames', () => {
           human: 'TBD',
           date_format: 0,
           status: 1,
-          platform: { id: 167, name: 'PlayStation 5' },
+          platform: { id: 167, name: 'PlayStation 5', platform_family: 1 },
           game: {
             id: 3,
             name: 'Game TBD',
@@ -121,7 +122,7 @@ describe('getUpcomingPSGames', () => {
           human: 'April 1, 2026',
           date_format: 0,
           status: 1,
-          platform: { id: 167, name: 'PlayStation 5' },
+          platform: { id: 167, name: 'PlayStation 5', platform_family: 1 },
           game: gameB,
         },
       ],
@@ -132,7 +133,7 @@ describe('getUpcomingPSGames', () => {
       .mockResolvedValueOnce(releaseDatesResponse);
     globalThis.fetch = fetchMock;
 
-    const games = await getUpcomingPSGames(167);
+    const games = await getUpcomingPSGames(1);
 
     expect(games).toHaveLength(2);
     expect(games[0].id).toBe(1);
@@ -143,6 +144,42 @@ describe('getUpcomingPSGames', () => {
 
     const igdbCall = fetchMock.mock.calls[1][0].toString();
     expect(igdbCall).toContain('/release_dates');
+  });
+
+  it('can filter by a platform type id (e.g. PC/computer platform_type 6)', async () => {
+    process.env.IGDB_CLIENT_ID = 'test-client';
+    process.env.IGDB_CLIENT_SECRET = 'test-secret';
+
+    const now = 1760000000;
+    jest.spyOn(Date, 'now').mockReturnValue(now * 1000);
+
+    const fetchMock = jest.fn<
+      Promise<Response>,
+      [RequestInfo | URL, RequestInit | undefined]
+    >();
+
+    const tokenResponse = {
+      ok: true,
+      statusText: 'OK',
+      json: async () => ({ access_token: 'token', expires_in: 3600 }),
+    } as unknown as Response;
+
+    const releaseDatesResponse = {
+      ok: true,
+      statusText: 'OK',
+      json: async () => [],
+    } as unknown as Response;
+
+    fetchMock
+      .mockResolvedValueOnce(tokenResponse)
+      .mockResolvedValueOnce(releaseDatesResponse);
+    globalThis.fetch = fetchMock;
+
+    await getUpcomingPSGames({ type: 'platformType', id: 6 });
+
+    const igdbInit = fetchMock.mock.calls[1][1];
+    const body = typeof igdbInit?.body === 'string' ? igdbInit.body : '';
+    expect(body).toContain('platform.platform_type = (6)');
   });
 });
 
@@ -155,6 +192,7 @@ describe('getRecentlyReleasedGames', () => {
     globalThis.fetch = originalFetch;
     process.env.IGDB_CLIENT_ID = originalClientId;
     process.env.IGDB_CLIENT_SECRET = originalClientSecret;
+    resetIGDBTokenCacheForTests();
     jest.restoreAllMocks();
   });
 
@@ -208,7 +246,7 @@ describe('getRecentlyReleasedGames', () => {
           human: 'January 20, 2026',
           date_format: 0,
           status: 1,
-          platform: { id: 167, name: 'PlayStation 5' },
+          platform: { id: 167, name: 'PlayStation 5', platform_family: 1 },
           game: gameA,
         },
         {
@@ -217,7 +255,7 @@ describe('getRecentlyReleasedGames', () => {
           human: 'January 10, 2026',
           date_format: 0,
           status: 1,
-          platform: { id: 167, name: 'PlayStation 5' },
+          platform: { id: 167, name: 'PlayStation 5', platform_family: 1 },
           game: gameA,
         },
         {
@@ -226,7 +264,7 @@ describe('getRecentlyReleasedGames', () => {
           human: 'January 15, 2026',
           date_format: 0,
           status: 1,
-          platform: { id: 167, name: 'PlayStation 5' },
+          platform: { id: 167, name: 'PlayStation 5', platform_family: 1 },
           game: gameB,
         },
       ],
@@ -237,7 +275,7 @@ describe('getRecentlyReleasedGames', () => {
       .mockResolvedValueOnce(releaseDatesResponse);
     globalThis.fetch = fetchMock;
 
-    const games = await getRecentlyReleasedGames(167);
+    const games = await getRecentlyReleasedGames(1);
 
     expect(games).toHaveLength(2);
     expect(games[0].id).toBe(10);
@@ -259,6 +297,7 @@ describe('getGameById', () => {
     globalThis.fetch = originalFetch;
     process.env.IGDB_CLIENT_ID = originalClientId;
     process.env.IGDB_CLIENT_SECRET = originalClientSecret;
+    resetIGDBTokenCacheForTests();
     jest.restoreAllMocks();
   });
 

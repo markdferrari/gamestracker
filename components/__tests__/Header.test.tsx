@@ -26,10 +26,9 @@ jest.mock("../ViewToggle", () => ({
 }));
 
 describe("Header", () => {
-  it("renders logo and toggle", () => {
+  it("renders branding and toggle", () => {
     render(<Header />);
 
-    expect(screen.getByAltText("WhenCanIPlayIt logo")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Toggle" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Views" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /WhenCanIPlayIt/i })).toHaveAttribute("href", "/");

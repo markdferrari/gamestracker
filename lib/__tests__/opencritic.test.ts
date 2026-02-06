@@ -1,4 +1,9 @@
-import { getReviewedThisWeek, getRecentlyReleased } from '../opencritic';
+import {
+  getReviewedThisWeek,
+  getRecentlyReleased,
+  resetOpenCriticCacheForTests,
+  resetOpenCriticRateLimiterForTests,
+} from '../opencritic';
 import * as igdbLib from '../igdb';
 
 jest.mock('../igdb', () => ({
@@ -12,6 +17,8 @@ describe('getReviewedThisWeek', () => {
   afterEach(() => {
     globalThis.fetch = originalFetch;
     process.env.RAPID_API_KEY = originalRapidApiKey;
+    resetOpenCriticCacheForTests();
+    resetOpenCriticRateLimiterForTests();
     jest.restoreAllMocks();
   });
 
@@ -72,6 +79,7 @@ describe('getReviewedThisWeek', () => {
           'X-RapidAPI-Key': 'test-rapid-api-key',
           'X-RapidAPI-Host': 'opencritic-api.p.rapidapi.com',
         },
+        next: { revalidate: 60 * 10 },
       }
     );
 
@@ -142,6 +150,49 @@ describe('getReviewedThisWeek', () => {
     );
   });
 
+  it('retries with backoff when API returns 429', async () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(0));
+
+    try {
+      process.env.RAPID_API_KEY = 'test-rapid-api-key';
+      jest.spyOn(igdbLib, 'searchGameByName').mockResolvedValue(null);
+
+      const fetchMock = jest
+        .fn<Promise<Response>, [RequestInfo | URL, RequestInit | undefined]>()
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 429,
+          statusText: 'Too Many Requests',
+          headers: {
+            get: (name: string) => (name.toLowerCase() === 'retry-after' ? '1' : null),
+          },
+        } as unknown as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => [],
+        } as Response);
+
+      globalThis.fetch = fetchMock;
+
+      const promise = getReviewedThisWeek();
+
+      // Let the first request happen.
+      await jest.advanceTimersByTimeAsync(0);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+
+      // Advance time for Retry-After (1s).
+      await jest.advanceTimersByTimeAsync(1000);
+
+      const result = await promise;
+      expect(result).toEqual([]);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('should throw an error if network request fails', async () => {
     process.env.RAPID_API_KEY = 'test-rapid-api-key';
 
@@ -182,6 +233,38 @@ describe('getReviewedThisWeek', () => {
     expect(result[0].name).toBe('Game 1');
     expect(result[9].name).toBe('Game 10');
   });
+
+  it('caches the reviewed-this-week response to reduce 429s', async () => {
+    process.env.RAPID_API_KEY = 'test-rapid-api-key';
+
+    const mockResponse = [
+      {
+        id: 1,
+        name: 'Cached Game',
+        images: {},
+        numReviews: 1,
+      },
+    ];
+
+    jest.spyOn(igdbLib, 'searchGameByName').mockResolvedValue(null);
+
+    const fetchMock = jest.fn<
+      Promise<Response>,
+      [RequestInfo | URL, RequestInit | undefined]
+    >().mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => mockResponse,
+    } as Response);
+
+    globalThis.fetch = fetchMock;
+
+    const first = await getReviewedThisWeek();
+    const second = await getReviewedThisWeek();
+
+    expect(first).toEqual(second);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('getRecentlyReleased', () => {
@@ -191,6 +274,8 @@ describe('getRecentlyReleased', () => {
   afterEach(() => {
     globalThis.fetch = originalFetch;
     process.env.RAPID_API_KEY = originalRapidApiKey;
+    resetOpenCriticCacheForTests();
+    resetOpenCriticRateLimiterForTests();
     jest.restoreAllMocks();
   });
 
@@ -251,6 +336,7 @@ describe('getRecentlyReleased', () => {
           'X-RapidAPI-Key': 'test-rapid-api-key',
           'X-RapidAPI-Host': 'opencritic-api.p.rapidapi.com',
         },
+        next: { revalidate: 60 * 10 },
       }
     );
 
