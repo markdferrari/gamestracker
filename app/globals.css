@@ -7,6 +7,27 @@
   --foreground: #0f172a;
   --accent: #38bdf8;
   --surface: #ffffff;
+  
+  /* shadcn/ui colors */
+  --background: 0 0% 100%;
+  --foreground: 0 0% 3.6%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 3.6%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 3.6%;
+  --muted: 0 0% 96.1%;
+  --muted-foreground: 0 0% 45.1%;
+  --accent: 0 0% 9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 89.8%;
+  --input: 0 0% 89.8%;
+  --primary: 12 6.5% 15.1%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 0 0% 96.1%;
+  --secondary-foreground: 0 0% 9%;
+  --ring: 0 0% 3.6%;
 }
 
 @theme inline {
@@ -21,6 +42,27 @@ html.dark {
   --foreground: #e2e8f0;
   --accent: #38bdf8;
   --surface: #0f172a;
+  
+  /* shadcn/ui dark colors */
+  --background: 0 0% 3.6%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 3.6%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 3.6%;
+  --popover-foreground: 0 0% 98%;
+  --muted: 0 0% 14.9%;
+  --muted-foreground: 0 0% 63.9%;
+  --accent: 0 0% 98%;
+  --accent-foreground: 0 0% 9%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 9%;
+  --border: 0 0% 14.9%;
+  --input: 0 0% 14.9%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 12 6.5% 15.1%;
+  --secondary: 0 0% 14.9%;
+  --secondary-foreground: 0 0% 98%;
+  --ring: 0 0% 83.1%;
 }
 
 body {

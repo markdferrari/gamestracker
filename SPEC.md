@@ -6,19 +6,92 @@ Additional filters - genre, developer/studio
 
 ## Feat: improved UI
 
-Are there off-the-shelf components we could use?
-Is the UI as intuitive as it should be?
-The logo is rubbish - I think we should remove it and have the site title in a better font instead.
-Light/dark mode toggle should use sun/moon icons instead of words.
-Standard font across the whole project
-Mobile display is poor - needs to be completely refactored.
+### Goals
+- Modern, minimal visual style with consistent typography and spacing
+- Reduce visual noise on the homepage while keeping key actions obvious
+- Improve mobile usability (touch-first layout, readable cards, simplified chrome)
+- Make filters and view toggles feel “app-like” rather than utility controls
+
+### Visual System
+- **Typography**: Use Geist across the site (headings + body). Use 2–3 weights max.
+- **Color**: Maintain light/dark parity and contrast; keep current teal/sky accent for CTAs/badges.
+- **Elevation**: Subtle shadow or border for cards; avoid heavy gradients except for hero background.
+- **Spacing**: Adopt a consistent spacing scale (4/8/12/16/24/32).
+
+### Header + Branding
+- Remove the current logo.
+- Replace with a clean text-based title using a stronger font weight and tracking.
+- Keep header height compact on mobile (no double-row headers).
+
+### Homepage Layout
+- Remove or simplify the main subtitle(s) to reduce clutter.
+- The two sidebars should never appear on mobile; the main grid and filters should be the focus.
+- On desktop, maintain the current two-sidebar layout but reduce visual density in sidebars.
+
+### Filters + View Toggle
+- Keep filters sticky on desktop (optional on mobile).
+- Switch the light/dark toggle from text to icons (sun/moon).
+- Ensure filter controls are thumb-friendly on mobile (larger tap targets, simplified labels).
+
+### Carousel UI (Latest Reviews + Trending)
+- **Mobile**: horizontal, left-to-right scrolling cards (touch swipe).
+- **Desktop**: horizontal, left-to-right scrolling cards (consistent with mobile).
+- **Card content parity**: Trending should show the same core fields as Latest Reviews:
+  - Score (rounded)
+  - Tier badge (if available)
+  - Percent recommended on hover (hide if missing)
+  - Cover image + title
+  - Platform + release date
+- Hover states should be subtle and consistent (opacity + small translate).
+
+### Accessibility
+- Maintain readable contrast in both themes.
+- Buttons/links must have visible focus states.
+- Ensure carousel items remain keyboard accessible.
+
+### UI Package Recommendations
+**Preferred stack:** shadcn/ui (Radix UI primitives + Tailwind styling)
+
+**Component mapping**
+- **Header**: `Button`, `DropdownMenu`, `Separator`, `Tooltip`
+- **Filters / View Toggle**: `Select`, `Tabs` or `ToggleGroup`, `Badge`, `Button`
+- **Cards + Carousels**: `Card`, `Badge`, `Skeleton`, optional `HoverCard`
+- **Sidebars**: `ScrollArea`, `Separator`
+- **Mobile filters** (optional): `Dialog` or `Sheet`
+
+**Phased adoption**
+- **Phase 1**: `Button`, `Badge`, `Card`, `Select`, `Tabs`, `Skeleton`
+- **Phase 2**: `ScrollArea`, `HoverCard`, `Tooltip`, `DropdownMenu`
+- **Phase 3**: `Dialog`/`Sheet` for mobile filter UX
+
+### Phase 1 Implementation Status ✅
+
+**Completed**
+- ✅ Installed shadcn/ui and Radix UI primitives
+- ✅ Added Phase 1 components: Button, Badge, Card, Select, Tabs, Skeleton
+- ✅ Created `/components/ui` directory with all component files
+- ✅ Set up utils file with `cn()` helper for className merging
+- ✅ Configured components.json for shadcn integration
+- ✅ Added CSS variables for light/dark theme to globals.css
+- ✅ Installed all required dependencies (@radix-ui/react-select, @radix-ui/react-tabs, clsx, class-variance-authority, tailwind-merge)
+- ✅ Build passes successfully
+
+**Next Steps (Phase 2+)**
+- Update Header component to use new Button (icon buttons for theme toggle)
+- Refactor PlatformFilter to use Select and Tabs components
+- Update GameCard to use new Card component
+- Update carousel loading states to use Skeleton component
+- Add Phase 2 components (ScrollArea, HoverCard, Tooltip, DropdownMenu)
+
+### Open Questions
+1. **Header layout**: Should the site title be left-aligned with controls on the right, or centered?
 
 ## Feat: Opencritic links
 
 Integrate with the opencritic api - https://app.swaggerhub.com/apis-docs/OpenCritic/OpenCritic-API/1.0.0
 Link to opencritic from game detail page
 
-## Feat: 'Trending' (In Progress)
+## Feat: 'Trending' ✅
 
 ### Overview
 Display recently released games in a vertically scrolling carousel on the right sidebar of the homepage, helping users discover trending games that have been released recently.

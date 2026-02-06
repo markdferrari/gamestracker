@@ -31,7 +31,7 @@ export default function RootLayout({
         <Header />
         {children}
         <footer className="border-t border-zinc-200/70 bg-white/80 py-6 text-center text-sm text-zinc-500 dark:border-zinc-800/80 dark:bg-zinc-950/80 dark:text-zinc-400">
-          Data provided by IGDB
+          Data provided by <a href="https://www.igdb.com/" target="_blank" rel="noopener noreferrer" className="underline">IGDB</a>
         </footer>
       </body>
     </html>
