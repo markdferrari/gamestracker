@@ -30,6 +30,7 @@ export default $config({
       environment: {
         IGDB_CLIENT_ID: process.env.IGDB_CLIENT_ID!,
         IGDB_CLIENT_SECRET: process.env.IGDB_CLIENT_SECRET!,
+        RAPID_API_KEY: process.env.RAPID_API_KEY!,
       },
     });
 

@@ -1,23 +1,21 @@
 'use client';
 
-import Image from 'next/image';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import type { TrendingGame } from '@/lib/opencritic';
 import { Star } from 'lucide-react';
-import type { OpenCriticReview, TrendingGame } from '@/lib/opencritic';
-import { useEffect, useRef, useState } from 'react';
 
-type CarouselItem = OpenCriticReview | TrendingGame;
-
-interface ReviewCarouselProps {
-  reviews: OpenCriticReview[];
+interface TrendingCarouselProps {
+  games: TrendingGame[];
 }
 
-export function ReviewCarousel({ reviews }: ReviewCarouselProps) {
+export function TrendingCarousel({ games }: TrendingCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
-    if (!scrollRef.current || reviews.length === 0 || isPaused) return;
+    if (!scrollRef.current || games.length === 0 || isPaused) return;
 
     const scrollContainer = scrollRef.current;
     let scrollPosition = 0;
@@ -38,17 +36,17 @@ export function ReviewCarousel({ reviews }: ReviewCarouselProps) {
     const intervalId = setInterval(scroll, 50);
 
     return () => clearInterval(intervalId);
-  }, [reviews.length, isPaused]);
+  }, [games.length, isPaused]);
 
-  if (reviews.length === 0) {
+  if (games.length === 0) {
     return <div />;
   }
 
-  // Duplicate reviews for seamless loop
-  const duplicatedReviews = [...reviews, ...reviews];
+  // Duplicate games for seamless loop
+  const duplicatedGames = [...games, ...games];
 
   return (
-    <div 
+    <div
       className="relative w-full overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
@@ -62,36 +60,22 @@ export function ReviewCarousel({ reviews }: ReviewCarouselProps) {
         }}
       >
         <div className="flex flex-row gap-4">
-          {duplicatedReviews.map((review, index) => {
-            const slug = review.name.toLowerCase().replace(/\s+/g, '-');
-            const openCriticUrl = `https://opencritic.com/game/${review.id}/${slug}`;
-            const roundedScore = review.topCriticScore ? Math.round(review.topCriticScore) : null;
+          {duplicatedGames.map((game, index) => {
+            const slug = game.name.toLowerCase().replace(/\s+/g, '-');
+            const openCriticUrl = `https://opencritic.com/game/${game.id}/${slug}`;
+            const roundedScore = game.topCriticScore ? Math.round(game.topCriticScore) : null;
+            const platformNames = game.platforms?.map((p) => p.name).join(', ') || 'Unknown';
 
-            const getTierColor = (tier?: string) => {
-              switch (tier) {
-                case 'Mighty':
-                  return 'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-200';
-                case 'Strong':
-                  return 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-200';
-                case 'Fair':
-                  return 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-200';
-                case 'Weak':
-                  return 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-200';
-                default:
-                  return 'bg-zinc-100 text-zinc-700 dark:bg-zinc-500/20 dark:text-zinc-200';
-              }
-            };
-
-            const rawImageUrl = 
-              review.igdbCoverUrl ||
-              review.images.box?.sm || 
-              review.images.box?.og || 
-              review.images.banner?.sm || 
-              review.images.banner?.og;
+            const rawImageUrl =
+              game.igdbCoverUrl ||
+              game.images.box?.sm ||
+              game.images.box?.og ||
+              game.images.banner?.sm ||
+              game.images.banner?.og;
 
             return (
               <Link
-                key={`${review.id}-${index}`}
+                key={`${game.id}-${index}`}
                 href={openCriticUrl}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -103,7 +87,7 @@ export function ReviewCarousel({ reviews }: ReviewCarouselProps) {
                     {rawImageUrl ? (
                       <Image
                         src={rawImageUrl}
-                        alt={`${review.name} cover`}
+                        alt={`${game.name} cover`}
                         fill
                         unoptimized
                         className="object-cover"
@@ -120,34 +104,35 @@ export function ReviewCarousel({ reviews }: ReviewCarouselProps) {
                   <div className="flex min-w-0 flex-col justify-between gap-2">
                     <div>
                       <h3 className="line-clamp-2 text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                        {review.name}
+                        {game.name}
                       </h3>
-                      {review.tier && (
-                        <span
-                          className={`mt-1 inline-block rounded px-2 py-0.5 text-xs font-semibold uppercase ${getTierColor(review.tier)}`}
-                        >
-                          {review.tier}
+                      {platformNames && platformNames !== 'Unknown' && (
+                        <span className="mt-1 inline-block rounded bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-700 dark:bg-sky-500/20 dark:text-sky-200">
+                          {platformNames.split(', ')[0]}
                         </span>
                       )}
                     </div>
 
-                    {/* Score and Percent Recommended */}
+                    {/* Release Date and Score */}
                     <div className="flex flex-col gap-1">
-                      {roundedScore !== null && (
-                        <div className="flex items-center gap-1.5">
-                          <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                          <span className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-                            {roundedScore}
-                          </span>
+                      {game.releaseDate && (
+                        <div className="text-xs text-zinc-600 dark:text-zinc-400">
+                          {new Date(game.releaseDate).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                          })}
                         </div>
                       )}
-                      
-                      {/* Hover-revealed percent recommended */}
-                      {review.percentRecommended !== undefined && (
+
+                      {/* Hover-revealed score */}
+                      {roundedScore !== null && (
                         <div className="max-h-0 overflow-hidden opacity-0 transition-all duration-200 group-hover:max-h-6 group-hover:opacity-100">
-                          <span className="text-xs text-zinc-600 dark:text-zinc-400">
-                            {Math.round(review.percentRecommended)}% recommend
-                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                            <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                              {roundedScore}
+                            </span>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -167,3 +152,4 @@ export function ReviewCarousel({ reviews }: ReviewCarouselProps) {
     </div>
   );
 }
+

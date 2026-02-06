@@ -1,4 +1,4 @@
-import { getReviewedThisWeek } from '../opencritic';
+import { getReviewedThisWeek, getRecentlyReleased } from '../opencritic';
 import * as igdbLib from '../igdb';
 
 jest.mock('../igdb', () => ({
@@ -177,6 +177,173 @@ describe('getReviewedThisWeek', () => {
     globalThis.fetch = fetchMock;
 
     const result = await getReviewedThisWeek(10);
+
+    expect(result).toHaveLength(10);
+    expect(result[0].name).toBe('Game 1');
+    expect(result[9].name).toBe('Game 10');
+  });
+});
+
+describe('getRecentlyReleased', () => {
+  const originalFetch = globalThis.fetch;
+  const originalRapidApiKey = process.env.RAPID_API_KEY;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+    process.env.RAPID_API_KEY = originalRapidApiKey;
+    jest.restoreAllMocks();
+  });
+
+  it('should fetch and return recently released games with correct structure', async () => {
+    process.env.RAPID_API_KEY = 'test-rapid-api-key';
+
+    const mockResponse = [
+      {
+        id: 1,
+        name: 'Test Game 1',
+        images: {
+          box: { og: 'https://example.com/image1.jpg' },
+        },
+        platforms: [{ id: 167, name: 'PlayStation 5' }],
+        releaseDate: '2026-02-06',
+        topCriticScore: 82,
+        numReviews: 35,
+        percentRecommended: 85,
+      },
+      {
+        id: 2,
+        name: 'Test Game 2',
+        images: {
+          banner: { og: 'https://example.com/image2.jpg' },
+        },
+        platforms: [{ id: 6, name: 'PC' }],
+        releaseDate: '2026-02-05',
+        topCriticScore: 78,
+        numReviews: 22,
+        percentRecommended: 75,
+      },
+    ];
+
+    // Mock IGDB search
+    jest.spyOn(igdbLib, 'searchGameByName').mockResolvedValue({
+      id: 123,
+      name: 'Test Game',
+      cover: { url: '//images.igdb.com/igdb/image/upload/t_thumb/cover1.jpg' },
+    });
+
+    const fetchMock = jest.fn<
+      Promise<Response>,
+      [RequestInfo | URL, RequestInit | undefined]
+    >().mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => mockResponse,
+    } as Response);
+
+    globalThis.fetch = fetchMock;
+
+    const result = await getRecentlyReleased();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://opencritic-api.p.rapidapi.com/game/recently-released',
+      {
+        headers: {
+          'X-RapidAPI-Key': 'test-rapid-api-key',
+          'X-RapidAPI-Host': 'opencritic-api.p.rapidapi.com',
+        },
+      }
+    );
+
+    expect(result).toHaveLength(2);
+    expect(result[0].name).toBe('Test Game 1');
+    expect(result[0].platforms).toEqual([{ id: 167, name: 'PlayStation 5' }]);
+    expect(result[0].releaseDate).toBe('2026-02-06');
+  });
+
+  it('should handle games with missing optional fields', async () => {
+    process.env.RAPID_API_KEY = 'test-rapid-api-key';
+
+    const mockResponse = [
+      {
+        id: 3,
+        name: 'Minimal Game',
+        images: {},
+        numReviews: 5,
+      },
+    ];
+
+    // Mock IGDB search returning null
+    jest.spyOn(igdbLib, 'searchGameByName').mockResolvedValue(null);
+
+    const fetchMock = jest.fn<
+      Promise<Response>,
+      [RequestInfo | URL, RequestInit | undefined]
+    >().mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => mockResponse,
+    } as Response);
+
+    globalThis.fetch = fetchMock;
+
+    const result = await getRecentlyReleased();
+
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe('Minimal Game');
+  });
+
+  it('should throw an error if RAPID_API_KEY is not set', async () => {
+    delete process.env.RAPID_API_KEY;
+
+    await expect(getRecentlyReleased()).rejects.toThrow(
+      'RAPID_API_KEY environment variable is required'
+    );
+  });
+
+  it('should throw an error if API request fails', async () => {
+    process.env.RAPID_API_KEY = 'test-rapid-api-key';
+
+    const fetchMock = jest.fn<
+      Promise<Response>,
+      [RequestInfo | URL, RequestInit | undefined]
+    >().mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      statusText: 'Unauthorized',
+    } as Response);
+
+    globalThis.fetch = fetchMock;
+
+    await expect(getRecentlyReleased()).rejects.toThrow(
+      'OpenCritic API request failed: 401 Unauthorized'
+    );
+  });
+
+  it('should respect the limit parameter', async () => {
+    process.env.RAPID_API_KEY = 'test-rapid-api-key';
+
+    const mockResponse = Array.from({ length: 20 }, (_, i) => ({
+      id: i + 1,
+      name: `Game ${i + 1}`,
+      images: {},
+      numReviews: 10,
+    }));
+
+    // Mock IGDB search
+    jest.spyOn(igdbLib, 'searchGameByName').mockResolvedValue(null);
+
+    const fetchMock = jest.fn<
+      Promise<Response>,
+      [RequestInfo | URL, RequestInit | undefined]
+    >().mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => mockResponse,
+    } as Response);
+
+    globalThis.fetch = fetchMock;
+
+    const result = await getRecentlyReleased(10);
 
     expect(result).toHaveLength(10);
     expect(result[0].name).toBe('Game 1');
