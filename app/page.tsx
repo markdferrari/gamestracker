@@ -2,7 +2,6 @@ import { getUpcomingPSGames, getRecentlyReleasedGames } from '@/lib/igdb';
 import type { IGDBGame } from '@/lib/igdb';
 import { GameCard } from '@/components/GameCard';
 import { PlatformFilter } from '@/components/PlatformFilter';
-import { ViewToggle } from '@/components/ViewToggle';
 import { LatestReviewsSection } from '@/components/LatestReviewsSection';
 import { TrendingSection } from '@/components/TrendingSection';
 import { Suspense } from 'react';

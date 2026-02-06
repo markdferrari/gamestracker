@@ -1,9 +1,5 @@
 import { GET, revalidate } from '@/app/api/opencritic/recently-released/route';
 import * as opencriticLib from '@/lib/opencritic';
-import {
-  OPENCRITIC_CAROUSEL_TTL_SECONDS,
-  OPENCRITIC_JITTER_SECONDS,
-} from '@/lib/opencritic-cache';
 
 jest.mock('@/lib/opencritic', () => ({
   getRecentlyReleased: jest.fn(),
@@ -45,12 +41,7 @@ describe('GET /api/opencritic/recently-released', () => {
     expect(await response.json()).toEqual({ games: [] });
   });
 
-  it('exports a jittered revalidate value', () => {
-    expect(revalidate).toBeGreaterThanOrEqual(
-      OPENCRITIC_CAROUSEL_TTL_SECONDS - OPENCRITIC_JITTER_SECONDS
-    );
-    expect(revalidate).toBeLessThanOrEqual(
-      OPENCRITIC_CAROUSEL_TTL_SECONDS + OPENCRITIC_JITTER_SECONDS
-    );
+  it('exports the expected TTL', () => {
+    expect(revalidate).toBe(86400);
   });
 });

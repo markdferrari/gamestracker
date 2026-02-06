@@ -1,13 +1,6 @@
 import { getReviewedThisWeek } from '@/lib/opencritic';
-import {
-  OPENCRITIC_CAROUSEL_TTL_SECONDS,
-  OPENCRITIC_JITTER_SECONDS,
-  jitterTtl,
-} from '@/lib/opencritic-cache';
 
-const reviewedRevalidate = jitterTtl(OPENCRITIC_CAROUSEL_TTL_SECONDS, OPENCRITIC_JITTER_SECONDS);
-
-export const revalidate = reviewedRevalidate;
+export const revalidate = 86400;
 
 export async function GET() {
   try {

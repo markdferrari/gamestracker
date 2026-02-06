@@ -1,9 +1,5 @@
 import { GET, revalidate } from '@/app/api/opencritic/reviewed-this-week/route';
 import * as opencriticLib from '@/lib/opencritic';
-import {
-  OPENCRITIC_CAROUSEL_TTL_SECONDS,
-  OPENCRITIC_JITTER_SECONDS,
-} from '@/lib/opencritic-cache';
 
 type Review = Parameters<(typeof opencriticLib)['getReviewedThisWeek']>[0];
 
@@ -44,12 +40,7 @@ describe('GET /api/opencritic/reviewed-this-week', () => {
     expect(await response.json()).toEqual({ reviews: [] });
   });
 
-  it('sets a jittered revalidate within range', () => {
-    expect(revalidate).toBeGreaterThanOrEqual(
-      OPENCRITIC_CAROUSEL_TTL_SECONDS - OPENCRITIC_JITTER_SECONDS
-    );
-    expect(revalidate).toBeLessThanOrEqual(
-      OPENCRITIC_CAROUSEL_TTL_SECONDS + OPENCRITIC_JITTER_SECONDS
-    );
+  it('exports the expected TTL', () => {
+    expect(revalidate).toBe(86400);
   });
 });

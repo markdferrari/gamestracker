@@ -1,13 +1,7 @@
 import { getRecentlyReleased } from '@/lib/opencritic';
-import {
-  OPENCRITIC_CAROUSEL_TTL_SECONDS,
-  OPENCRITIC_JITTER_SECONDS,
-  jitterTtl,
-} from '@/lib/opencritic-cache';
 
-const trendingRevalidate = jitterTtl(OPENCRITIC_CAROUSEL_TTL_SECONDS, OPENCRITIC_JITTER_SECONDS);
+export const revalidate = 86400;
 
-export const revalidate = trendingRevalidate;
 
 export async function GET() {
   try {
