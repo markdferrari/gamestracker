@@ -395,7 +395,7 @@ export async function getRecentlyReleasedGames(
       const bDate = getPlatformReleaseDate(b) ?? 0;
       return bDate - aDate;
     })
-    .slice(0, 60);
+    .slice(0, 6);
 }
 
 /**

@@ -7,7 +7,7 @@ export async function TrendingSection() {
   let games: TrendingGame[] = [];
 
   try {
-    games = await getRecentlyReleased(10);
+    games = await getRecentlyReleased(6);
   } catch (error) {
     console.error('Failed to fetch trending games:', error);
     // Return empty games array on error

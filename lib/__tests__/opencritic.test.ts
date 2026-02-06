@@ -67,7 +67,7 @@ describe('getReviewedThisWeek', () => {
           'X-RapidAPI-Key': 'test-rapid-api-key',
           'X-RapidAPI-Host': 'opencritic-api.p.rapidapi.com',
         },
-        next: { revalidate: 60 * 10 },
+        next: { revalidate: 60 * 60 * 24 * 7 },
       }
     );
 
@@ -351,7 +351,7 @@ describe('getRecentlyReleased', () => {
           'X-RapidAPI-Key': 'test-rapid-api-key',
           'X-RapidAPI-Host': 'opencritic-api.p.rapidapi.com',
         },
-        next: { revalidate: 60 * 10 },
+        next: { revalidate: 60 * 60 * 24 * 7 },
       }
     );
 
@@ -417,7 +417,7 @@ describe('getRecentlyReleased', () => {
     );
   });
 
-  it('should respect the limit parameter', async () => {
+  it('should cap the limit parameter at 6', async () => {
     process.env.RAPID_API_KEY = 'test-rapid-api-key';
 
     const mockResponse = Array.from({ length: 20 }, (_, i) => ({
@@ -440,8 +440,8 @@ describe('getRecentlyReleased', () => {
 
     const result = await getRecentlyReleased(10);
 
-    expect(result).toHaveLength(10);
+    expect(result).toHaveLength(6);
     expect(result[0].name).toBe('Game 1');
-    expect(result[9].name).toBe('Game 10');
+    expect(result[5].name).toBe('Game 6');
   });
 });

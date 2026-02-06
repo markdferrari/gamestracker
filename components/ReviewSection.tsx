@@ -1,8 +1,6 @@
 import { ExternalLink } from 'lucide-react';
 import { getGameReviews, shouldShowReviews } from '@/lib/reviews';
 import type { IGDBGame } from '@/lib/igdb';
-import { getOpenCriticGameDetails } from '@/lib/opencritic';
-import { OpenCriticBadge } from '@/components/OpenCriticBadge';
 
 interface ReviewSectionProps {
   game: IGDBGame;
@@ -36,20 +34,8 @@ export async function ReviewSection({ game, openCriticIdFromQuery }: ReviewSecti
   const openCriticId = openCriticIdFromQuery ?? openCriticIdFromExternalGames;
   const openCriticUrl = reviews.openCriticUrl ?? (openCriticId ? `https://opencritic.com/game/${openCriticId}` : undefined);
 
-  const openCriticDetails = await (async () => {
-    if (!openCriticId) return null;
-    try {
-      return await getOpenCriticGameDetails(openCriticId);
-    } catch {
-      return null;
-    }
-  })();
-
-  const hasOpenCriticBadge =
-    !!openCriticDetails &&
-    (openCriticDetails.topCriticScore !== undefined || !!openCriticDetails.tier);
   const hasReviewLinks = !!(reviews.metacriticUrl || openCriticUrl);
-  const hasAnyReviewContent = hasReviewLinks || hasOpenCriticBadge;
+  const hasAnyReviewContent = hasReviewLinks;
 
   if (!hasAnyReviewContent) {
     return null;
@@ -62,35 +48,6 @@ export async function ReviewSection({ game, openCriticIdFromQuery }: ReviewSecti
       </h2>
 
       <div className="mt-4 space-y-4">
-        {/* OpenCritic Rating */}
-        {hasOpenCriticBadge && (
-          <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="flex items-center justify-between gap-4">
-              <div className="min-w-0">
-                <div className="font-medium text-zinc-900 dark:text-zinc-100">
-                  OpenCritic
-                </div>
-                {openCriticUrl && (
-                  <a
-                    href={openCriticUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-1 inline-flex items-center gap-1 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-                  >
-                    View on OpenCritic
-                    <ExternalLink className="h-3.5 w-3.5" />
-                  </a>
-                )}
-              </div>
-
-              <OpenCriticBadge
-                tier={openCriticDetails?.tier}
-                score={openCriticDetails?.topCriticScore}
-              />
-            </div>
-          </div>
-        )}
-
         {/* Review Site Links */}
         <div className="grid gap-3 sm:grid-cols-2">
           {reviews.metacriticUrl && (

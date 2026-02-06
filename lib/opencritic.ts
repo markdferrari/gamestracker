@@ -271,7 +271,7 @@ export async function getReviewedThisWeek(
   }
 
   const cacheKey = 'opencritic:reviewed-this-week';
-  const cacheTtlMs = 60 * 10 * 1000;
+  const cacheTtlMs = 7 * 24 * 60 * 60 * 1000;
 
   const cachedData = await getCachedOrCreate<OpenCriticReview[]>(
     cacheKey,
@@ -284,7 +284,7 @@ export async function getReviewedThisWeek(
             'X-RapidAPI-Key': rapidApiKey,
             'X-RapidAPI-Host': 'opencritic-api.p.rapidapi.com',
           },
-          next: { revalidate: 60 * 10 },
+          next: { revalidate: 60 * 60 * 24 * 7 },
         }
       );
 
@@ -305,7 +305,7 @@ export async function getReviewedThisWeek(
 
 /**
  * Fetches recently released games from OpenCritic
- * @param limit Optional maximum number of games to return (default: all)
+ * @param limit Optional maximum number of games to return (capped at 6)
  * @returns Array of recently released games
  */
 export async function getRecentlyReleased(
@@ -318,7 +318,7 @@ export async function getRecentlyReleased(
   }
 
   const cacheKey = 'opencritic:recently-released';
-  const cacheTtlMs = 60 * 10 * 1000;
+  const cacheTtlMs = 7 * 24 * 60 * 60 * 1000;
 
   const cachedData = await getCachedOrCreate<TrendingGame[]>(
     cacheKey,
@@ -331,7 +331,7 @@ export async function getRecentlyReleased(
             'X-RapidAPI-Key': rapidApiKey,
             'X-RapidAPI-Host': 'opencritic-api.p.rapidapi.com',
           },
-          next: { revalidate: 60 * 10 },
+          next: { revalidate: 60 * 60 * 24 * 7 },
         }
       );
 
@@ -346,6 +346,7 @@ export async function getRecentlyReleased(
     }
   );
 
-  if (limit && limit > 0) return cachedData.slice(0, limit);
-  return cachedData;
+  const maxLimit = 6;
+  const resolvedLimit = limit && limit > 0 ? Math.min(limit, maxLimit) : maxLimit;
+  return cachedData.slice(0, resolvedLimit);
 }
