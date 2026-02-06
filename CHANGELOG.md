@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/markdferrari/gamestracker/compare/v1.2.1...v1.2.2) (2026-02-06)
+
+
+### Bug Fixes
+
+* broken build ([#14](https://github.com/markdferrari/gamestracker/issues/14)) ([f64f331](https://github.com/markdferrari/gamestracker/commit/f64f3318ebe9a7e6f544a3c7ef0baed0db00dbc7))
+
 ## [1.2.1](https://github.com/markdferrari/gamestracker/compare/v1.2.0...v1.2.1) (2026-02-06)
 
 
