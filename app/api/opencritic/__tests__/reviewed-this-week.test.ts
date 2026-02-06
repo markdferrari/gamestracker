@@ -1,7 +1,5 @@
-import { GET, revalidate } from '@/app/api/opencritic/reviewed-this-week/route';
+import { GET, dynamic } from '@/app/api/opencritic/reviewed-this-week/route';
 import * as opencriticLib from '@/lib/opencritic';
-
-type Review = Parameters<(typeof opencriticLib)['getReviewedThisWeek']>[0];
 
 jest.mock('@/lib/opencritic', () => ({
   getReviewedThisWeek: jest.fn(),
@@ -27,6 +25,9 @@ describe('GET /api/opencritic/reviewed-this-week', () => {
 
     const response = await GET();
     expect(response.status).toBe(200);
+    expect(response.headers.get('Cache-Control')).toBe(
+      'public, s-maxage=86400, stale-while-revalidate=43200'
+    );
     expect(await response.json()).toEqual({ reviews: mockReviews });
     expect(opencriticLib.getReviewedThisWeek).toHaveBeenCalledWith(10);
   });
@@ -37,10 +38,11 @@ describe('GET /api/opencritic/reviewed-this-week', () => {
     const response = await GET();
 
     expect(response.status).toBe(500);
+    expect(response.headers.get('Cache-Control')).toBe('no-store');
     expect(await response.json()).toEqual({ reviews: [] });
   });
 
-  it('exports the expected TTL', () => {
-    expect(revalidate).toBe(86400);
+  it('forces dynamic rendering', () => {
+    expect(dynamic).toBe('force-dynamic');
   });
 });

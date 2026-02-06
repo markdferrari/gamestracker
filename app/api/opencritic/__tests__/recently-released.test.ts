@@ -1,4 +1,4 @@
-import { GET, revalidate } from '@/app/api/opencritic/recently-released/route';
+import { GET, dynamic } from '@/app/api/opencritic/recently-released/route';
 import * as opencriticLib from '@/lib/opencritic';
 
 jest.mock('@/lib/opencritic', () => ({
@@ -28,6 +28,9 @@ describe('GET /api/opencritic/recently-released', () => {
     const response = await GET();
 
     expect(response.status).toBe(200);
+    expect(response.headers.get('Cache-Control')).toBe(
+      'public, s-maxage=86400, stale-while-revalidate=43200'
+    );
     expect(await response.json()).toEqual({ games: mockGames });
     expect(opencriticLib.getRecentlyReleased).toHaveBeenCalledWith(6);
   });
@@ -38,10 +41,11 @@ describe('GET /api/opencritic/recently-released', () => {
     const response = await GET();
 
     expect(response.status).toBe(500);
+    expect(response.headers.get('Cache-Control')).toBe('no-store');
     expect(await response.json()).toEqual({ games: [] });
   });
 
-  it('exports the expected TTL', () => {
-    expect(revalidate).toBe(86400);
+  it('forces dynamic rendering', () => {
+    expect(dynamic).toBe('force-dynamic');
   });
 });
