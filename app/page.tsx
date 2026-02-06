@@ -13,7 +13,11 @@ interface PageProps {
 
 export default async function Home({ searchParams }: PageProps) {
   const params = await searchParams;
-  const platformId = parseInt(params.platform || '167', 10);
+  const platformParam = params.platform || '1';
+  const platformFilter =
+    platformParam === 'pc'
+      ? ({ type: 'platformType', id: 6 } as const)
+      : ({ type: 'family', id: parseInt(platformParam, 10) || 1 } as const);
   const view = params.view || 'upcoming';
   
   let games: IGDBGame[] = [];
@@ -21,18 +25,14 @@ export default async function Home({ searchParams }: PageProps) {
 
   try {
     if (view === 'recent') {
-      games = await getRecentlyReleasedGames(platformId);
+      games = await getRecentlyReleasedGames(platformFilter);
     } else {
-      games = await getUpcomingPSGames(platformId);
+      games = await getUpcomingPSGames(platformFilter);
     }
   } catch (e) {
     error = e instanceof Error ? e.message : 'Failed to fetch games';
     games = [];
   }
-
-  const subtitle = view === 'recent' 
-    ? 'Games released in the past 60 days'
-    : 'Upcoming game releases';
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.15),_transparent_45%)]">
@@ -59,10 +59,18 @@ export default async function Home({ searchParams }: PageProps) {
 
         {/* Main Content */}
         <div className="flex-1">
-          <div className="mb-10 flex flex-col items-center text-center">
-            <p className="text-lg text-zinc-600 dark:text-zinc-400">
-              {subtitle}
-            </p>
+          {/* Mobile: stacked carousels */}
+          <div className="mb-10 lg:hidden" data-testid="mobile-carousels">
+            <Suspense fallback={<div />}> 
+              <div className="space-y-8">
+                <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                  <LatestReviewsSection />
+                </div>
+                <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                  <TrendingSection />
+                </div>
+              </div>
+            </Suspense>
           </div>
 
           {/* Platform Filter */}

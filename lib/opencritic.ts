@@ -4,6 +4,157 @@ import { searchGameByName } from './igdb';
 
 const OPENCRITIC_BASE_URL = 'https://opencritic-api.p.rapidapi.com';
 
+const OPENCRITIC_RATE_LIMIT_PER_SECOND = 4;
+const OPENCRITIC_MIN_INTERVAL_MS = Math.ceil(1000 / OPENCRITIC_RATE_LIMIT_PER_SECOND);
+
+type NextFetchRequestInit = RequestInit & {
+  next?: { revalidate?: number };
+};
+
+const sleep = async (ms: number) => {
+  if (ms <= 0) return;
+  await new Promise<void>((resolve) => setTimeout(resolve, ms));
+};
+
+type CacheValueEntry<T> = {
+  kind: 'value';
+  value: T;
+  expiresAt: number;
+};
+
+type CachePromiseEntry<T> = {
+  kind: 'promise';
+  promise: Promise<T>;
+  expiresAt: number;
+};
+
+type CacheEntry<T> = CacheValueEntry<T> | CachePromiseEntry<T>;
+
+const openCriticCache = new Map<string, CacheEntry<unknown>>();
+
+export function resetOpenCriticCacheForTests() {
+  if (process.env.NODE_ENV !== 'test') return;
+  openCriticCache.clear();
+}
+
+const getCachedOrCreate = async <T>(
+  key: string,
+  ttlMs: number,
+  factory: () => Promise<T>,
+): Promise<T> => {
+  if (!Number.isFinite(ttlMs) || ttlMs <= 0) {
+    return factory();
+  }
+
+  const now = Date.now();
+  const existing = openCriticCache.get(key);
+
+  if (existing && existing.expiresAt > now) {
+    if (existing.kind === 'value') {
+      return existing.value as T;
+    }
+    return (await existing.promise) as T;
+  }
+
+  const expiresAt = now + ttlMs;
+
+  const promise = factory()
+    .then((value) => {
+      openCriticCache.set(key, { kind: 'value', value, expiresAt });
+      return value;
+    })
+    .catch((error: unknown) => {
+      openCriticCache.delete(key);
+      throw error;
+    });
+
+  openCriticCache.set(key, { kind: 'promise', promise, expiresAt });
+  return promise;
+};
+
+let openCriticRateLimitQueue: Promise<void> = Promise.resolve();
+let openCriticNextAllowedAt = 0;
+
+export function resetOpenCriticRateLimiterForTests() {
+  if (process.env.NODE_ENV !== 'test') return;
+  openCriticRateLimitQueue = Promise.resolve();
+  openCriticNextAllowedAt = 0;
+}
+
+const scheduleOpenCriticRequestSlot = async () => {
+  const scheduled = openCriticRateLimitQueue.then(async () => {
+    const now = Date.now();
+    const waitMs = Math.max(0, openCriticNextAllowedAt - now);
+    openCriticNextAllowedAt = Math.max(openCriticNextAllowedAt, now) + OPENCRITIC_MIN_INTERVAL_MS;
+    await sleep(waitMs);
+  });
+
+  // Prevent queue from getting stuck if a caller throws.
+  openCriticRateLimitQueue = scheduled.catch(() => undefined);
+  await scheduled;
+};
+
+const parseRetryAfterMs = (response: Response): number | null => {
+  const raw = response.headers?.get('retry-after');
+  if (!raw) return null;
+
+  const asSeconds = Number(raw);
+  if (Number.isFinite(asSeconds) && asSeconds >= 0) {
+    return Math.floor(asSeconds * 1000);
+  }
+
+  const asDate = Date.parse(raw);
+  if (Number.isFinite(asDate)) {
+    const waitMs = asDate - Date.now();
+    return waitMs > 0 ? waitMs : 0;
+  }
+
+  return null;
+};
+
+const openCriticFetch = async (
+  url: string,
+  init: NextFetchRequestInit,
+  options?: {
+    retries?: number;
+    baseDelayMs?: number;
+    maxDelayMs?: number;
+  }
+): Promise<Response> => {
+  const retries = options?.retries ?? 3;
+  const baseDelayMs = options?.baseDelayMs ?? 500;
+  const maxDelayMs = options?.maxDelayMs ?? 8000;
+
+  const maxAttempts = Math.max(1, retries + 1);
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    await scheduleOpenCriticRequestSlot();
+
+    const response = await fetch(url, init);
+
+    if (response.status !== 429) {
+      return response;
+    }
+
+    if (attempt === maxAttempts - 1) {
+      return response;
+    }
+
+    const retryAfterMs = parseRetryAfterMs(response);
+    const backoffMs = Math.min(maxDelayMs, baseDelayMs * Math.pow(2, attempt));
+    const jitterMs = retryAfterMs !== null ? 0 : Math.floor(Math.random() * 100);
+    const delayMs = (retryAfterMs ?? backoffMs) + jitterMs;
+
+    // If we get rate-limited, slow down subsequent queued requests too.
+    openCriticNextAllowedAt = Math.max(openCriticNextAllowedAt, Date.now() + delayMs);
+
+    await sleep(delayMs);
+  }
+
+  // Unreachable, but keeps TypeScript happy.
+  throw new Error('OpenCritic request failed after retries');
+};
+
 export interface OpenCriticGameDetails {
   id: number;
   name: string;
@@ -26,19 +177,26 @@ export async function getOpenCriticGameDetails(
     throw new Error('RAPID_API_KEY environment variable is required');
   }
 
-  const response = await fetch(`${OPENCRITIC_BASE_URL}/game/${openCriticId}`, {
-    headers: {
-      'X-RapidAPI-Key': rapidApiKey,
-      'X-RapidAPI-Host': 'opencritic-api.p.rapidapi.com',
-    },
-    next: { revalidate: 60 * 60 },
-  });
+  const cacheKey = `opencritic:game:${openCriticId}`;
+  const cacheTtlMs = 60 * 60 * 1000;
 
-  if (!response.ok) {
-    return null;
-  }
+  const data = await getCachedOrCreate<unknown>(cacheKey, cacheTtlMs, async () => {
+    const response = await openCriticFetch(`${OPENCRITIC_BASE_URL}/game/${openCriticId}`, {
+      headers: {
+        'X-RapidAPI-Key': rapidApiKey,
+        'X-RapidAPI-Host': 'opencritic-api.p.rapidapi.com',
+      },
+      next: { revalidate: 60 * 60 },
+    });
 
-  const data: unknown = await response.json();
+    if (!response.ok) {
+      // Avoid caching failures so a transient 429/5xx can recover quickly.
+      throw new Error(`OpenCritic game details request failed: ${response.status}`);
+    }
+
+    return response.json() as Promise<unknown>;
+  }).catch(() => null);
+
   if (!isRecord(data)) {
     return null;
   }
@@ -112,53 +270,65 @@ export async function getReviewedThisWeek(
     throw new Error('RAPID_API_KEY environment variable is required');
   }
 
-  const response = await fetch(
-    `${OPENCRITIC_BASE_URL}/game/reviewed-this-week`,
-    {
-      headers: {
-        'X-RapidAPI-Key': rapidApiKey,
-        'X-RapidAPI-Host': 'opencritic-api.p.rapidapi.com',
-      },
+  const cacheKey = 'opencritic:reviewed-this-week:enriched';
+  const cacheTtlMs = 60 * 10 * 1000;
+
+  const enrichedData = await getCachedOrCreate<OpenCriticReview[]>(
+    cacheKey,
+    cacheTtlMs,
+    async () => {
+      const response = await openCriticFetch(
+        `${OPENCRITIC_BASE_URL}/game/reviewed-this-week`,
+        {
+          headers: {
+            'X-RapidAPI-Key': rapidApiKey,
+            'X-RapidAPI-Host': 'opencritic-api.p.rapidapi.com',
+          },
+          next: { revalidate: 60 * 10 },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `OpenCritic API request failed: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const data: OpenCriticReview[] = await response.json();
+
+      // Enrich with IGDB cover images
+      const enriched = await Promise.all(
+        data.map(async (game) => {
+          try {
+            const igdbGame = await searchGameByName(game.name);
+            if (igdbGame) {
+              const enrichedGame: OpenCriticReview = {
+                ...game,
+                igdbId: igdbGame.id,
+              };
+
+              if (igdbGame.cover?.url) {
+                // Convert thumbnail URL to cover_big (264x352)
+                enrichedGame.igdbCoverUrl = igdbGame.cover.url.replace(
+                  't_thumb',
+                  't_cover_big'
+                );
+              }
+
+              return enrichedGame;
+            }
+          } catch (error) {
+            console.error(`Failed to fetch IGDB cover for ${game.name}:`, error);
+          }
+          return game;
+        })
+      );
+
+      return enriched;
     }
   );
 
-  if (!response.ok) {
-    throw new Error(
-      `OpenCritic API request failed: ${response.status} ${response.statusText}`
-    );
-  }
-
-  const data: OpenCriticReview[] = await response.json();
-
-  // Enrich with IGDB cover images
-  const enrichedData = await Promise.all(
-    data.map(async (game) => {
-      try {
-        const igdbGame = await searchGameByName(game.name);
-        if (igdbGame) {
-          const enriched: OpenCriticReview = {
-            ...game,
-            igdbId: igdbGame.id,
-          };
-
-          if (igdbGame.cover?.url) {
-            // Convert thumbnail URL to cover_big (264x352)
-            enriched.igdbCoverUrl = igdbGame.cover.url.replace('t_thumb', 't_cover_big');
-          }
-
-          return enriched;
-        }
-      } catch (error) {
-        console.error(`Failed to fetch IGDB cover for ${game.name}:`, error);
-      }
-      return game;
-    })
-  );
-
-  if (limit && limit > 0) {
-    return enrichedData.slice(0, limit);
-  }
-
+  if (limit && limit > 0) return enrichedData.slice(0, limit);
   return enrichedData;
 }
 
@@ -176,52 +346,64 @@ export async function getRecentlyReleased(
     throw new Error('RAPID_API_KEY environment variable is required');
   }
 
-  const response = await fetch(
-    `${OPENCRITIC_BASE_URL}/game/recently-released`,
-    {
-      headers: {
-        'X-RapidAPI-Key': rapidApiKey,
-        'X-RapidAPI-Host': 'opencritic-api.p.rapidapi.com',
-      },
+  const cacheKey = 'opencritic:recently-released:enriched';
+  const cacheTtlMs = 60 * 10 * 1000;
+
+  const enrichedData = await getCachedOrCreate<TrendingGame[]>(
+    cacheKey,
+    cacheTtlMs,
+    async () => {
+      const response = await openCriticFetch(
+        `${OPENCRITIC_BASE_URL}/game/recently-released`,
+        {
+          headers: {
+            'X-RapidAPI-Key': rapidApiKey,
+            'X-RapidAPI-Host': 'opencritic-api.p.rapidapi.com',
+          },
+          next: { revalidate: 60 * 10 },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `OpenCritic API request failed: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const data: TrendingGame[] = await response.json();
+
+      // Enrich with IGDB cover images
+      const enriched = await Promise.all(
+        data.map(async (game) => {
+          try {
+            const igdbGame = await searchGameByName(game.name);
+            if (igdbGame) {
+              const enrichedGame: TrendingGame = {
+                ...game,
+                igdbId: igdbGame.id,
+              };
+
+              if (igdbGame.cover?.url) {
+                // Convert thumbnail URL to cover_big (264x352)
+                enrichedGame.igdbCoverUrl = igdbGame.cover.url.replace(
+                  't_thumb',
+                  't_cover_big'
+                );
+              }
+
+              return enrichedGame;
+            }
+          } catch (error) {
+            console.error(`Failed to fetch IGDB cover for ${game.name}:`, error);
+          }
+          return game;
+        })
+      );
+
+      return enriched;
     }
   );
 
-  if (!response.ok) {
-    throw new Error(
-      `OpenCritic API request failed: ${response.status} ${response.statusText}`
-    );
-  }
-
-  const data: TrendingGame[] = await response.json();
-
-  // Enrich with IGDB cover images
-  const enrichedData = await Promise.all(
-    data.map(async (game) => {
-      try {
-        const igdbGame = await searchGameByName(game.name);
-        if (igdbGame) {
-          const enriched: TrendingGame = {
-            ...game,
-            igdbId: igdbGame.id,
-          };
-
-          if (igdbGame.cover?.url) {
-            // Convert thumbnail URL to cover_big (264x352)
-            enriched.igdbCoverUrl = igdbGame.cover.url.replace('t_thumb', 't_cover_big');
-          }
-
-          return enriched;
-        }
-      } catch (error) {
-        console.error(`Failed to fetch IGDB cover for ${game.name}:`, error);
-      }
-      return game;
-    })
-  );
-
-  if (limit && limit > 0) {
-    return enrichedData.slice(0, limit);
-  }
-
+  if (limit && limit > 0) return enrichedData.slice(0, limit);
   return enrichedData;
 }

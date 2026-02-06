@@ -22,21 +22,21 @@ describe('PlatformFilter', () => {
   it('should render all platform options', () => {
     render(<PlatformFilter />);
     
-    expect(screen.getByText('PlayStation 5')).toBeInTheDocument();
+    expect(screen.getByText('PlayStation')).toBeInTheDocument();
+    expect(screen.getByText('Xbox')).toBeInTheDocument();
+    expect(screen.getByText('Nintendo')).toBeInTheDocument();
     expect(screen.getByText('PC')).toBeInTheDocument();
-    expect(screen.getByText('Xbox Series S/X')).toBeInTheDocument();
-    expect(screen.getByText('Nintendo Switch 2')).toBeInTheDocument();
   });
 
-  it('should highlight PS5 as default platform', () => {
+  it('should highlight PlayStation as default platform', () => {
     render(<PlatformFilter />);
     
-    const ps5Button = screen.getByText('PlayStation 5');
-    expect(ps5Button).toHaveClass('bg-sky-500');
+    const playstationButton = screen.getByText('PlayStation');
+    expect(playstationButton).toHaveClass('bg-sky-500');
   });
 
   it('should highlight selected platform from search params', () => {
-    const searchParamsWithPC = new URLSearchParams('platform=6');
+    const searchParamsWithPC = new URLSearchParams('platform=pc');
     (useSearchParams as jest.Mock).mockReturnValue(searchParamsWithPC);
     
     render(<PlatformFilter />);
@@ -52,20 +52,20 @@ describe('PlatformFilter', () => {
     const pcButton = screen.getByText('PC');
     await user.click(pcButton);
     
-    expect(mockPush).toHaveBeenCalledWith('/?platform=6');
+    expect(mockPush).toHaveBeenCalledWith('/?platform=pc');
   });
 
   it('should preserve existing search params when changing platform', async () => {
-    const searchParamsWithExtra = new URLSearchParams('platform=167&sort=date');
+    const searchParamsWithExtra = new URLSearchParams('platform=1&sort=date');
     (useSearchParams as jest.Mock).mockReturnValue(searchParamsWithExtra);
     
     const user = userEvent.setup();
     render(<PlatformFilter />);
     
-    const xboxButton = screen.getByText('Xbox Series S/X');
+    const xboxButton = screen.getByText('Xbox');
     await user.click(xboxButton);
     
-    expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('platform=169'));
+    expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('platform=2'));
     expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('sort=date'));
   });
 });
