@@ -67,6 +67,12 @@ export function ReviewCarousel({ reviews }: ReviewCarouselProps) {
             const openCriticUrl = `https://opencritic.com/game/${review.id}/${slug}`;
             const roundedScore = review.topCriticScore ? Math.round(review.topCriticScore) : null;
 
+            const href = review.igdbId ? `/game/${review.igdbId}` : openCriticUrl;
+            const internalHrefWithOc = review.igdbId
+              ? `/game/${review.igdbId}?oc=${review.id}`
+              : openCriticUrl;
+            const isExternal = internalHrefWithOc.startsWith('http');
+
             const getTierColor = (tier?: string) => {
               switch (tier) {
                 case 'Mighty':
@@ -92,9 +98,10 @@ export function ReviewCarousel({ reviews }: ReviewCarouselProps) {
             return (
               <Link
                 key={`${review.id}-${index}`}
-                href={openCriticUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+                {...(isExternal
+                  ? { target: '_blank', rel: 'noopener noreferrer' }
+                  : undefined)}
+                href={internalHrefWithOc}
                 className="group block"
               >
                 <div className="flex flex-col gap-3 rounded-lg border border-zinc-200/70 bg-white/80 p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-800/70 dark:bg-zinc-900/80 min-w-fit">

@@ -1,12 +1,15 @@
-import { ExternalLink, Star } from 'lucide-react';
-import { getGameReviews, shouldShowReviews, formatRating, type GameReviews } from '@/lib/reviews';
+import { ExternalLink } from 'lucide-react';
+import { getGameReviews, shouldShowReviews } from '@/lib/reviews';
 import type { IGDBGame } from '@/lib/igdb';
+import { getOpenCriticGameDetails } from '@/lib/opencritic';
+import { OpenCriticBadge } from '@/components/OpenCriticBadge';
 
 interface ReviewSectionProps {
   game: IGDBGame;
+  openCriticIdFromQuery?: number | null;
 }
 
-export function ReviewSection({ game }: ReviewSectionProps) {
+export async function ReviewSection({ game, openCriticIdFromQuery }: ReviewSectionProps) {
   // Check if game is recent enough to show reviews
   const releaseDate = game.release_dates?.[0]?.date || game.first_release_date;
   
@@ -21,7 +24,34 @@ export function ReviewSection({ game }: ReviewSectionProps) {
     name: game.name,
   });
 
-  if (!reviews.hasReviews && !reviews.openCriticUrl) {
+  const openCriticUid = game.external_games?.find((external) => external.category === 162)?.uid;
+  const openCriticIdFromExternalGames = (() => {
+    if (!openCriticUid) return null;
+    const match = openCriticUid.match(/\d+/);
+    if (!match) return null;
+    const parsed = parseInt(match[0], 10);
+    return Number.isNaN(parsed) ? null : parsed;
+  })();
+
+  const openCriticId = openCriticIdFromQuery ?? openCriticIdFromExternalGames;
+  const openCriticUrl = reviews.openCriticUrl ?? (openCriticId ? `https://opencritic.com/game/${openCriticId}` : undefined);
+
+  const openCriticDetails = await (async () => {
+    if (!openCriticId) return null;
+    try {
+      return await getOpenCriticGameDetails(openCriticId);
+    } catch {
+      return null;
+    }
+  })();
+
+  const hasOpenCriticBadge =
+    !!openCriticDetails &&
+    (openCriticDetails.topCriticScore !== undefined || !!openCriticDetails.tier);
+  const hasReviewLinks = !!(reviews.metacriticUrl || openCriticUrl);
+  const hasAnyReviewContent = hasReviewLinks || hasOpenCriticBadge;
+
+  if (!hasAnyReviewContent) {
     return null;
   }
 
@@ -32,31 +62,31 @@ export function ReviewSection({ game }: ReviewSectionProps) {
       </h2>
 
       <div className="mt-4 space-y-4">
-        {/* IGDB Community Rating */}
-        {reviews.igdbRating && (
+        {/* OpenCritic Rating */}
+        {hasOpenCriticBadge && (
           <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                  <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                    IGDB Community Rating
-                  </span>
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <div className="font-medium text-zinc-900 dark:text-zinc-100">
+                  OpenCritic
                 </div>
-                {reviews.igdbRatingCount && (
-                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                    Based on {reviews.igdbRatingCount.toLocaleString()} ratings
-                  </p>
+                {openCriticUrl && (
+                  <a
+                    href={openCriticUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1 inline-flex items-center gap-1 text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                  >
+                    View on OpenCritic
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
                 )}
               </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
-                  {formatRating(reviews.igdbRating)}
-                </div>
-                <div className="text-sm text-zinc-600 dark:text-zinc-400">
-                  out of 100
-                </div>
-              </div>
+
+              <OpenCriticBadge
+                tier={openCriticDetails?.tier}
+                score={openCriticDetails?.topCriticScore}
+              />
             </div>
           </div>
         )}
@@ -82,9 +112,9 @@ export function ReviewSection({ game }: ReviewSectionProps) {
             </a>
           )}
 
-          {reviews.openCriticUrl && (
+          {openCriticUrl && (
             <a
-              href={reviews.openCriticUrl}
+              href={openCriticUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 transition-colors hover:border-blue-400 hover:bg-blue-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-blue-600 dark:hover:bg-blue-950"
@@ -103,7 +133,9 @@ export function ReviewSection({ game }: ReviewSectionProps) {
         </div>
 
         {/* No reviews message for very recent games */}
-        {!reviews.hasReviews && releaseDate && releaseDate > (Date.now() / 1000) - (7 * 24 * 60 * 60) && (
+        {!hasAnyReviewContent &&
+          releaseDate &&
+          releaseDate > (Date.now() / 1000) - (7 * 24 * 60 * 60) && (
           <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
               🎮 This game was recently released. Reviews may not be available yet.

@@ -1,4 +1,4 @@
-import { formatReleaseDate, getGameById, getRecentlyReleasedGames, getUpcomingPSGames } from '../igdb';
+import { formatReleaseDate, getGameById, getRecentlyReleasedGames, getUpcomingPSGames, resetIGDBTokenCacheForTests } from '../igdb';
 
 describe('formatReleaseDate', () => {
   it('should format Unix timestamp to human-readable date', () => {
@@ -9,15 +9,15 @@ describe('formatReleaseDate', () => {
   });
 
   it('should handle different months', () => {
-    // December 25, 2025 at 00:00:00 UTC = 1766793600
-    const timestamp = 1766793600;
+    // December 25, 2025 at 00:00:00 UTC = 1766620800
+    const timestamp = 1766620800;
     const result = formatReleaseDate(timestamp);
     expect(result).toBe('December 25, 2025');
   });
 
   it('should format dates correctly across years', () => {
-    // March 1, 2026 at 00:00:00 UTC = 1772524800
-    const timestamp = 1772524800;
+    // March 1, 2026 at 00:00:00 UTC = 1772323200
+    const timestamp = 1772323200;
     const result = formatReleaseDate(timestamp);
     expect(result).toBe('March 1, 2026');
   });
@@ -32,6 +32,7 @@ describe('getUpcomingPSGames', () => {
     globalThis.fetch = originalFetch;
     process.env.IGDB_CLIENT_ID = originalClientId;
     process.env.IGDB_CLIENT_SECRET = originalClientSecret;
+    resetIGDBTokenCacheForTests();
     jest.restoreAllMocks();
   });
 
@@ -155,6 +156,7 @@ describe('getRecentlyReleasedGames', () => {
     globalThis.fetch = originalFetch;
     process.env.IGDB_CLIENT_ID = originalClientId;
     process.env.IGDB_CLIENT_SECRET = originalClientSecret;
+    resetIGDBTokenCacheForTests();
     jest.restoreAllMocks();
   });
 
@@ -259,6 +261,7 @@ describe('getGameById', () => {
     globalThis.fetch = originalFetch;
     process.env.IGDB_CLIENT_ID = originalClientId;
     process.env.IGDB_CLIENT_SECRET = originalClientSecret;
+    resetIGDBTokenCacheForTests();
     jest.restoreAllMocks();
   });
 

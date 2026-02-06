@@ -2,6 +2,11 @@
 
 let cachedToken: { access_token: string; expires_at: number } | null = null;
 
+export function resetIGDBTokenCacheForTests() {
+  if (process.env.NODE_ENV !== 'test') return;
+  cachedToken = null;
+}
+
 export interface IGDBGame {
   id: number;
   name: string;
@@ -352,5 +357,6 @@ export function formatReleaseDate(timestamp: number): string {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
+    timeZone: 'UTC',
   });
 }

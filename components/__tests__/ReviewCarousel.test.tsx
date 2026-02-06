@@ -24,6 +24,7 @@ describe('ReviewCarousel', () => {
   const mockReviews: OpenCriticReview[] = [
     {
       id: 1,
+      igdbId: 101,
       name: 'Game One',
       images: {
         box: { sm: 'https://example.com/game1.jpg' },
@@ -36,6 +37,7 @@ describe('ReviewCarousel', () => {
     },
     {
       id: 2,
+      igdbId: 202,
       name: 'Game Two',
       images: {
         box: { sm: 'https://example.com/game2.jpg' },
@@ -74,7 +76,24 @@ describe('ReviewCarousel', () => {
   it('should link to OpenCritic page', () => {
     render(<ReviewCarousel reviews={mockReviews} />);
     const links = screen.getAllByRole('link');
-    expect(links[0]).toHaveAttribute('href', 'https://opencritic.com/game/1/game-one');
+    expect(links[0]).toHaveAttribute('href', '/game/101?oc=1');
+  });
+
+  it('should fall back to OpenCritic link when igdbId is missing', () => {
+    const reviewsWithoutIgdbId: OpenCriticReview[] = [
+      {
+        id: 9,
+        name: 'No Match Game',
+        images: { box: { sm: 'https://example.com/game9.jpg' } },
+        tier: 'Fair',
+        topCriticScore: 70,
+        numReviews: 10,
+      },
+    ];
+
+    render(<ReviewCarousel reviews={reviewsWithoutIgdbId} />);
+    const links = screen.getAllByRole('link');
+    expect(links[0]).toHaveAttribute('href', 'https://opencritic.com/game/9/no-match-game');
   });
 
   it('should render cover images', () => {
@@ -89,6 +108,7 @@ describe('ReviewCarousel', () => {
     const reviewsWithPercent: OpenCriticReview[] = [
       {
         id: 1,
+        igdbId: 101,
         name: 'Game One',
         images: { box: { sm: 'https://example.com/game1.jpg' } },
         tier: 'Mighty',

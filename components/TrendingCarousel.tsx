@@ -66,6 +66,9 @@ export function TrendingCarousel({ games }: TrendingCarouselProps) {
             const roundedScore = game.topCriticScore ? Math.round(game.topCriticScore) : null;
             const platformNames = game.platforms?.map((p) => p.name).join(', ') || 'Unknown';
 
+            const href = game.igdbId ? `/game/${game.igdbId}?oc=${game.id}` : openCriticUrl;
+            const isExternal = href.startsWith('http');
+
             const rawImageUrl =
               game.igdbCoverUrl ||
               game.images.box?.sm ||
@@ -76,9 +79,10 @@ export function TrendingCarousel({ games }: TrendingCarouselProps) {
             return (
               <Link
                 key={`${game.id}-${index}`}
-                href={openCriticUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+                {...(isExternal
+                  ? { target: '_blank', rel: 'noopener noreferrer' }
+                  : undefined)}
+                href={href}
                 className="group block"
               >
                 <div className="flex flex-col gap-3 rounded-lg border border-zinc-200/70 bg-white/80 p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-800/70 dark:bg-zinc-900/80 min-w-fit">

@@ -1,6 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Moon, Sun } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type Theme = "light" | "dark";
 
@@ -59,13 +68,27 @@ export function ThemeToggle() {
   };
 
   return (
-    <button
-      type="button"
-      onClick={toggleTheme}
-      className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-wide text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
-      aria-label="Toggle dark mode"
-    >
-      {theme === "dark" ? "Light mode" : "Dark mode"}
-    </button>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            onClick={toggleTheme}
+            variant="outline"
+            size="icon"
+            aria-label="Toggle dark mode"
+          >
+            {theme === "dark" ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          {theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
