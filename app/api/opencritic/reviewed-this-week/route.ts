@@ -1,14 +1,26 @@
-import { NextResponse } from 'next/server';
 import { getReviewedThisWeek } from '@/lib/opencritic';
+import {
+  OPENCRITIC_CAROUSEL_TTL_SECONDS,
+  OPENCRITIC_JITTER_SECONDS,
+  jitterTtl,
+} from '@/lib/opencritic-cache';
 
-export const revalidate = 604800; // 7 days in seconds
+const reviewedRevalidate = jitterTtl(OPENCRITIC_CAROUSEL_TTL_SECONDS, OPENCRITIC_JITTER_SECONDS);
+
+export const revalidate = reviewedRevalidate;
 
 export async function GET() {
   try {
     const reviews = await getReviewedThisWeek(10);
-    return NextResponse.json({ reviews });
+    return new Response(JSON.stringify({ reviews }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (error) {
     console.error('Failed to fetch latest reviews:', error);
-    return NextResponse.json({ reviews: [] });
+    return new Response(JSON.stringify({ reviews: [] }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }

@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { LatestReviewsSection } from '../LatestReviewsSection';
 
 describe('LatestReviewsSection', () => {
@@ -79,7 +79,9 @@ describe('LatestReviewsSection', () => {
 
     const { container } = render(<LatestReviewsSection />);
 
-    intersectionObserver?.triggerIntersect(true);
+    await act(async () => {
+      intersectionObserver?.triggerIntersect(true);
+    });
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith('/api/opencritic/reviewed-this-week', {
@@ -97,7 +99,9 @@ describe('LatestReviewsSection', () => {
 
     render(<LatestReviewsSection />);
 
-    intersectionObserver?.triggerIntersect(true);
+    await act(async () => {
+      intersectionObserver?.triggerIntersect(true);
+    });
 
     await waitFor(() => {
       expect(screen.getByText('No reviews available')).toBeInTheDocument();
