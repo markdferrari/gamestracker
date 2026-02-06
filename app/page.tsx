@@ -3,6 +3,7 @@ import type { IGDBGame } from '@/lib/igdb';
 import { GameCard } from '@/components/GameCard';
 import { PlatformFilter } from '@/components/PlatformFilter';
 import { ViewToggle } from '@/components/ViewToggle';
+import { LatestReviewsSection } from '@/components/LatestReviewsSection';
 import { Suspense } from 'react';
 
 interface PageProps {
@@ -34,19 +35,41 @@ export default async function Home({ searchParams }: PageProps) {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.15),_transparent_45%)]">
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-10 flex flex-col items-center text-center">
-          <p className="text-lg text-zinc-600 dark:text-zinc-400">
-            {subtitle}
-          </p>
-        </div>
-
-        {/* Platform Filter */}
-        <Suspense fallback={<div>Loading filters...</div>}>
-          <div className="mb-8 flex justify-center">
-            <PlatformFilter />
+      <main className="mx-auto flex max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:px-8">
+        {/* Left Sidebar - Latest Reviews */}
+        <Suspense fallback={
+          <div className="w-80 flex-shrink-0">
+            <div className="animate-pulse rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="mb-4 h-6 rounded bg-zinc-200 dark:bg-zinc-700" />
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-24 rounded bg-zinc-100 dark:bg-zinc-800" />
+                ))}
+              </div>
+            </div>
+          </div>
+        }>
+          <div className="hidden w-80 flex-shrink-0 lg:block">
+            <div className="sticky top-4 h-[calc(100vh-8rem)]">
+              <LatestReviewsSection />
+            </div>
           </div>
         </Suspense>
+
+        {/* Main Content */}
+        <div className="flex-1">
+          <div className="mb-10 flex flex-col items-center text-center">
+            <p className="text-lg text-zinc-600 dark:text-zinc-400">
+              {subtitle}
+            </p>
+          </div>
+
+          {/* Platform Filter */}
+          <Suspense fallback={<div>Loading filters...</div>}>
+            <div className="mb-8 flex justify-center">
+              <PlatformFilter />
+            </div>
+          </Suspense>
 
         {/* Error Message */}
         {error && (
@@ -76,6 +99,7 @@ export default async function Home({ searchParams }: PageProps) {
             </div>
           )
         )}
+        </div>
       </main>
     </div>
   );

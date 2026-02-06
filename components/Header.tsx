@@ -15,6 +15,7 @@ export function Header() {
             width={36}
             height={36}
             priority
+            unoptimized
           />
           <span className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
             WhenCanIPlayIt
