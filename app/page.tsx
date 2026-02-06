@@ -4,7 +4,7 @@ import { GameCard } from '@/components/GameCard';
 import { PlatformFilter } from '@/components/PlatformFilter';
 import { ViewToggle } from '@/components/ViewToggle';
 import { LatestReviewsSection } from '@/components/LatestReviewsSection';
-// import { TrendingSection } from '@/components/TrendingSection';
+import { TrendingSection } from '@/components/TrendingSection';
 import { Suspense } from 'react';
 
 interface PageProps {
@@ -16,7 +16,7 @@ export default async function Home({ searchParams }: PageProps) {
   const platformParam = params.platform || '1';
   const platformFilter =
     platformParam === 'pc'
-      ? ({ type: 'platformType', id: 6 } as const)
+      ? ({ type: 'family', id: 4 } as const)
       : ({ type: 'family', id: parseInt(platformParam, 10) || 1 } as const);
   const view = params.view || 'upcoming';
   
@@ -66,9 +66,9 @@ export default async function Home({ searchParams }: PageProps) {
                 <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                   <LatestReviewsSection />
                 </div>
-                {/* <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                   <TrendingSection />
-                </div> */}
+                </div>
               </div>
             </Suspense>
           </div>
@@ -94,7 +94,7 @@ export default async function Home({ searchParams }: PageProps) {
 
         {/* Games Grid */}
         {games.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {games.map((game) => (
               <GameCard key={game.id} game={game} />
             ))}
@@ -110,8 +110,8 @@ export default async function Home({ searchParams }: PageProps) {
         )}
         </div>
 
-        {/* Right Sidebar - Trending (disabled) */}
-        {/* <Suspense fallback={
+        {/* Right Sidebar - Trending */}
+        <Suspense fallback={
           <div className="w-80 flex-shrink-0">
             <div className="animate-pulse rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
               <div className="mb-4 h-6 rounded bg-zinc-200 dark:bg-zinc-700" />
@@ -128,7 +128,7 @@ export default async function Home({ searchParams }: PageProps) {
               <TrendingSection />
             </div>
           </div>
-        </Suspense> */}
+        </Suspense>
       </main>
     </div>
   );

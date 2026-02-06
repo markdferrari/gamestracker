@@ -40,7 +40,6 @@ describe('Home page', () => {
 
     const mobile = within(mobileCarousels);
     expect(mobile.getByText('LatestReviewsSection')).toBeInTheDocument();
-    // TrendingSection is disabled to reduce OpenCritic API 429 errors
-    // expect(mobile.getByText('TrendingSection')).toBeInTheDocument();
+    expect(mobile.getByText('TrendingSection')).toBeInTheDocument();
   });
 });
