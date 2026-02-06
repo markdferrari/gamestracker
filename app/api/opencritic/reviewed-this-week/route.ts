@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getReviewedThisWeek } from '@/lib/opencritic';
 
-export const revalidate = 60 * 60 * 24 * 7;
+export const revalidate = 604800; // 7 days in seconds
 
 export async function GET() {
   try {
