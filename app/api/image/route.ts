@@ -1,5 +1,12 @@
 const CACHE_SECONDS = 60 * 60 * 24;
-const ALLOWED_HOSTS = new Set(["images.igdb.com"]);
+const ALLOWED_HOSTS = new Set([
+  "images.igdb.com",
+  "img.opencritic.com",
+  "opencritic.com",
+  "www.opencritic.com",
+  "opencritic-cdn.b-cdn.net",
+  "p3.opencritic.com",
+]);
 
 function buildCacheControlHeader() {
   return `public, max-age=${CACHE_SECONDS}, s-maxage=${CACHE_SECONDS}, stale-while-revalidate=${CACHE_SECONDS}`;
@@ -21,7 +28,8 @@ export async function GET(request: Request) {
   }
 
   if (!ALLOWED_HOSTS.has(target.hostname)) {
-    return new Response("Invalid host", { status: 400 });
+    console.error(`Image proxy blocked hostname: ${target.hostname} from URL: ${url}`);
+    return new Response(`Invalid host: ${target.hostname}`, { status: 400 });
   }
 
   const upstream = await fetch(target.toString());
