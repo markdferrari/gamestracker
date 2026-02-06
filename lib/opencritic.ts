@@ -1,7 +1,5 @@
 // OpenCritic API helpers for fetching game reviews
 
-import { searchGameByName } from './igdb';
-
 const OPENCRITIC_BASE_URL = 'https://opencritic-api.p.rapidapi.com';
 
 const OPENCRITIC_RATE_LIMIT_PER_SECOND = 4;
@@ -21,7 +19,6 @@ type CacheValueEntry<T> = {
   value: T;
   expiresAt: number;
 };
-
 type CachePromiseEntry<T> = {
   kind: 'promise';
   promise: Promise<T>;
@@ -273,10 +270,10 @@ export async function getReviewedThisWeek(
     throw new Error('RAPID_API_KEY environment variable is required');
   }
 
-  const cacheKey = 'opencritic:reviewed-this-week:enriched';
+  const cacheKey = 'opencritic:reviewed-this-week';
   const cacheTtlMs = 60 * 10 * 1000;
 
-  const enrichedData = await getCachedOrCreate<OpenCriticReview[]>(
+  const cachedData = await getCachedOrCreate<OpenCriticReview[]>(
     cacheKey,
     cacheTtlMs,
     async () => {
@@ -298,41 +295,12 @@ export async function getReviewedThisWeek(
       }
 
       const data: OpenCriticReview[] = await response.json();
-
-      // Enrich with IGDB cover images
-      const enriched = await Promise.all(
-        data.map(async (game) => {
-          try {
-            const igdbGame = await searchGameByName(game.name);
-            if (igdbGame) {
-              const enrichedGame: OpenCriticReview = {
-                ...game,
-                igdbId: igdbGame.id,
-              };
-
-              if (igdbGame.cover?.url) {
-                // Convert thumbnail URL to cover_big (264x352)
-                enrichedGame.igdbCoverUrl = igdbGame.cover.url.replace(
-                  't_thumb',
-                  't_cover_big'
-                );
-              }
-
-              return enrichedGame;
-            }
-          } catch (error) {
-            console.error(`Failed to fetch IGDB cover for ${game.name}:`, error);
-          }
-          return game;
-        })
-      );
-
-      return enriched;
+      return data;
     }
   );
 
-  if (limit && limit > 0) return enrichedData.slice(0, limit);
-  return enrichedData;
+  if (limit && limit > 0) return cachedData.slice(0, limit);
+  return cachedData;
 }
 
 /**
@@ -349,10 +317,10 @@ export async function getRecentlyReleased(
     throw new Error('RAPID_API_KEY environment variable is required');
   }
 
-  const cacheKey = 'opencritic:recently-released:enriched';
+  const cacheKey = 'opencritic:recently-released';
   const cacheTtlMs = 60 * 10 * 1000;
 
-  const enrichedData = await getCachedOrCreate<TrendingGame[]>(
+  const cachedData = await getCachedOrCreate<TrendingGame[]>(
     cacheKey,
     cacheTtlMs,
     async () => {
@@ -374,39 +342,10 @@ export async function getRecentlyReleased(
       }
 
       const data: TrendingGame[] = await response.json();
-
-      // Enrich with IGDB cover images
-      const enriched = await Promise.all(
-        data.map(async (game) => {
-          try {
-            const igdbGame = await searchGameByName(game.name);
-            if (igdbGame) {
-              const enrichedGame: TrendingGame = {
-                ...game,
-                igdbId: igdbGame.id,
-              };
-
-              if (igdbGame.cover?.url) {
-                // Convert thumbnail URL to cover_big (264x352)
-                enrichedGame.igdbCoverUrl = igdbGame.cover.url.replace(
-                  't_thumb',
-                  't_cover_big'
-                );
-              }
-
-              return enrichedGame;
-            }
-          } catch (error) {
-            console.error(`Failed to fetch IGDB cover for ${game.name}:`, error);
-          }
-          return game;
-        })
-      );
-
-      return enriched;
+      return data;
     }
   );
 
-  if (limit && limit > 0) return enrichedData.slice(0, limit);
-  return enrichedData;
+  if (limit && limit > 0) return cachedData.slice(0, limit);
+  return cachedData;
 }
