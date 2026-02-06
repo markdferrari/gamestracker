@@ -1,4 +1,4 @@
-import { getReviewedThisWeek } from '@/lib/opencritic';
+import { getRecentlyReleased } from '@/lib/opencritic';
 
 export const dynamic = 'force-dynamic';
 
@@ -6,8 +6,8 @@ const SUCCESS_CACHE_CONTROL = 'public, s-maxage=86400, stale-while-revalidate=43
 
 export async function GET() {
   try {
-    const reviews = await getReviewedThisWeek(10);
-    return new Response(JSON.stringify({ reviews }), {
+    const games = await getRecentlyReleased(6);
+    return new Response(JSON.stringify({ games }), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
@@ -15,8 +15,8 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error('Failed to fetch latest reviews:', error);
-    return new Response(JSON.stringify({ reviews: [] }), {
+    console.error('Failed to fetch trending games:', error);
+    return new Response(JSON.stringify({ games: [] }), {
       status: 500,
       headers: {
         'Content-Type': 'application/json',
