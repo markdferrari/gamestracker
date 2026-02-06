@@ -2,6 +2,33 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+### Environment Variables
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```bash
+# IGDB API credentials (required for game data)
+IGDB_CLIENT_ID=your_igdb_client_id
+IGDB_CLIENT_SECRET=your_igdb_client_secret
+
+# RapidAPI key (required for OpenCritic reviews)
+RAPID_API_KEY=your_rapidapi_key
+```
+
+#### How to get API credentials:
+
+1. **IGDB API**: 
+   - Register at [Twitch Developers](https://dev.twitch.tv/)
+   - Create an application to get your Client ID and Secret
+   - [IGDB API Documentation](https://api-docs.igdb.com/)
+
+2. **RapidAPI (OpenCritic)**:
+   - Sign up at [RapidAPI](https://rapidapi.com/)
+   - Subscribe to the [OpenCritic API](https://rapidapi.com/opencritic-opencritic-default/api/opencritic-api)
+   - Copy your API key from the dashboard
+
+### Running the Development Server
+
 First, run the development server:
 
 ```bash
