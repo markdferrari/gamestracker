@@ -31,6 +31,7 @@ describe('ReviewCarousel', () => {
       tier: 'Mighty',
       topCriticScore: 87.6,
       numReviews: 50,
+      percentRecommended: 92.5,
       igdbCoverUrl: '//images.igdb.com/igdb/image/upload/t_cover_big/cover1.jpg',
     },
     {
@@ -42,6 +43,7 @@ describe('ReviewCarousel', () => {
       tier: 'Strong',
       topCriticScore: 75.3,
       numReviews: 30,
+      percentRecommended: 80.0,
       igdbCoverUrl: '//images.igdb.com/igdb/image/upload/t_cover_big/cover2.jpg',
     },
   ];
@@ -81,5 +83,24 @@ describe('ReviewCarousel', () => {
     expect(images.length).toBeGreaterThan(0);
     // Should use IGDB cover URL first
     expect(images[0]).toHaveAttribute('src', '//images.igdb.com/igdb/image/upload/t_cover_big/cover1.jpg');
+  });
+
+  it('should show percent recommended on hover', () => {
+    const reviewsWithPercent: OpenCriticReview[] = [
+      {
+        id: 1,
+        name: 'Game One',
+        images: { box: { sm: 'https://example.com/game1.jpg' } },
+        tier: 'Mighty',
+        topCriticScore: 87.6,
+        numReviews: 50,
+        percentRecommended: 92.5,
+        igdbCoverUrl: '//images.igdb.com/igdb/image/upload/t_cover_big/cover1.jpg',
+      },
+    ];
+
+    render(<ReviewCarousel reviews={reviewsWithPercent} />);
+    // Should show rounded percent (92.5 -> 93)
+    expect(screen.getAllByText('93% recommend').length).toBeGreaterThan(0);
   });
 });

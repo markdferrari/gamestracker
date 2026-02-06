@@ -129,15 +129,26 @@ export function ReviewCarousel({ reviews }: ReviewCarouselProps) {
                       )}
                     </div>
 
-                    {/* Score */}
-                    {roundedScore !== null && (
-                      <div className="flex items-center gap-1.5">
-                        <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                        <span className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-                          {roundedScore}
-                        </span>
-                      </div>
-                    )}
+                    {/* Score and Percent Recommended */}
+                    <div className="flex flex-col gap-1">
+                      {roundedScore !== null && (
+                        <div className="flex items-center gap-1.5">
+                          <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                          <span className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+                            {roundedScore}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {/* Hover-revealed percent recommended */}
+                      {review.percentRecommended !== undefined && (
+                        <div className="max-h-0 overflow-hidden opacity-0 transition-all duration-200 group-hover:max-h-6 group-hover:opacity-100">
+                          <span className="text-xs text-zinc-600 dark:text-zinc-400">
+                            {Math.round(review.percentRecommended)}% recommend
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </Link>
