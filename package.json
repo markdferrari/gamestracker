@@ -12,8 +12,7 @@
     "test:coverage": "jest --coverage",
     "sst:dev": "sst dev",
     "sst:deploy": "sst deploy --stage production",
-    "sst:remove": "sst remove",
-    "release": "semantic-release"
+    "sst:remove": "sst remove"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
@@ -23,15 +22,11 @@
     "react-dom": "19.2.3"
   },
   "devDependencies": {
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/commit-analyzer": "^11.0.0",
-    "@semantic-release/git": "^10.0.1",
-    "@semantic-release/github": "^11.0.0",
-    "@semantic-release/release-notes-generator": "^12.0.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -42,7 +37,6 @@
     "eslint-config-next": "16.1.6",
     "jest": "^30.2.0",
     "jest-environment-jsdom": "^30.2.0",
-    "semantic-release": "^23.0.0",
     "sst": "^3.17.38",
     "tailwindcss": "^4",
     "typescript": "^5"

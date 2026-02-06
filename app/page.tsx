@@ -4,6 +4,7 @@ import { GameCard } from '@/components/GameCard';
 import { PlatformFilter } from '@/components/PlatformFilter';
 import { ViewToggle } from '@/components/ViewToggle';
 import { LatestReviewsSection } from '@/components/LatestReviewsSection';
+import { TrendingSection } from '@/components/TrendingSection';
 import { Suspense } from 'react';
 
 interface PageProps {
@@ -100,6 +101,26 @@ export default async function Home({ searchParams }: PageProps) {
           )
         )}
         </div>
+
+        {/* Right Sidebar - Trending */}
+        <Suspense fallback={
+          <div className="w-80 flex-shrink-0">
+            <div className="animate-pulse rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+              <div className="mb-4 h-6 rounded bg-zinc-200 dark:bg-zinc-700" />
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-24 rounded bg-zinc-100 dark:bg-zinc-800" />
+                ))}
+              </div>
+            </div>
+          </div>
+        }>
+          <div className="hidden w-80 flex-shrink-0 lg:block">
+            <div className="sticky top-4 h-[calc(100vh-8rem)]">
+              <TrendingSection />
+            </div>
+          </div>
+        </Suspense>
       </main>
     </div>
   );

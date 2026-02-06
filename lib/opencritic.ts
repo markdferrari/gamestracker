@@ -19,6 +19,21 @@ export interface OpenCriticReview {
   igdbCoverUrl?: string; // Added for fallback to IGDB images
 }
 
+export interface TrendingGame {
+  id: number;
+  name: string;
+  images: {
+    box?: { sm?: string; og?: string };
+    banner?: { sm?: string; og?: string };
+  };
+  platforms?: Array<{ id: number; name: string }>;
+  releaseDate?: string;
+  topCriticScore?: number;
+  numReviews?: number;
+  percentRecommended?: number;
+  igdbCoverUrl?: string; // Added for fallback to IGDB images
+}
+
 /**
  * Fetches games that have been reviewed this week from OpenCritic
  * @param limit Optional maximum number of games to return (default: all)
@@ -50,6 +65,62 @@ export async function getReviewedThisWeek(
   }
 
   const data: OpenCriticReview[] = await response.json();
+
+  // Enrich with IGDB cover images
+  const enrichedData = await Promise.all(
+    data.map(async (game) => {
+      try {
+        const igdbGame = await searchGameByName(game.name);
+        if (igdbGame?.cover?.url) {
+          // Convert thumbnail URL to cover_big (264x352)
+          const coverUrl = igdbGame.cover.url.replace('t_thumb', 't_cover_big');
+          return { ...game, igdbCoverUrl: coverUrl };
+        }
+      } catch (error) {
+        console.error(`Failed to fetch IGDB cover for ${game.name}:`, error);
+      }
+      return game;
+    })
+  );
+
+  if (limit && limit > 0) {
+    return enrichedData.slice(0, limit);
+  }
+
+  return enrichedData;
+}
+
+/**
+ * Fetches recently released games from OpenCritic
+ * @param limit Optional maximum number of games to return (default: all)
+ * @returns Array of recently released games
+ */
+export async function getRecentlyReleased(
+  limit?: number
+): Promise<TrendingGame[]> {
+  const rapidApiKey = process.env.RAPID_API_KEY;
+
+  if (!rapidApiKey) {
+    throw new Error('RAPID_API_KEY environment variable is required');
+  }
+
+  const response = await fetch(
+    `${OPENCRITIC_BASE_URL}/game/recently-released`,
+    {
+      headers: {
+        'X-RapidAPI-Key': rapidApiKey,
+        'X-RapidAPI-Host': 'opencritic-api.p.rapidapi.com',
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `OpenCritic API request failed: ${response.status} ${response.statusText}`
+    );
+  }
+
+  const data: TrendingGame[] = await response.json();
 
   // Enrich with IGDB cover images
   const enrichedData = await Promise.all(
