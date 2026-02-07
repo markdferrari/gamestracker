@@ -35,6 +35,7 @@ describe('TrendingCarousel', () => {
       numReviews: 35,
       percentRecommended: 85,
       igdbCoverUrl: '//images.igdb.com/igdb/image/upload/t_cover_big/cover1.jpg',
+      tier: 'Mighty',
     },
     {
       id: 2,
@@ -49,6 +50,7 @@ describe('TrendingCarousel', () => {
       numReviews: 22,
       percentRecommended: 75,
       igdbCoverUrl: '//images.igdb.com/igdb/image/upload/t_cover_big/cover2.jpg',
+      tier: 'Strong',
     },
   ];
 
@@ -108,11 +110,12 @@ describe('TrendingCarousel', () => {
     expect(images[0]).toHaveAttribute('src', '//images.igdb.com/igdb/image/upload/t_cover_big/cover1.jpg');
   });
 
-  it('should show score on hover', () => {
+  it('should display scores and tiers', () => {
     render(<TrendingCarousel games={mockGames} />);
-    // Score should be present in the DOM (in hover state)
     expect(screen.getAllByText('82').length).toBeGreaterThan(0);
     expect(screen.getAllByText('78').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Mighty').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Strong').length).toBeGreaterThan(0);
   });
 
   it('should format release dates', () => {

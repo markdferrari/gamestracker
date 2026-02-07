@@ -315,6 +315,7 @@ export interface TrendingGame {
   topCriticScore?: number;
   numReviews?: number;
   percentRecommended?: number;
+  tier?: string;
   igdbCoverUrl?: string; // Added for fallback to IGDB images
   igdbId?: number; // Added for internal linking to /game/[id]
 }
