@@ -9,16 +9,21 @@ interface GameCardProps {
 }
 
 export function GameCard({ game }: GameCardProps) {
-  // Get the cover image URL and convert to high-res
-  const coverUrl = game.cover?.url
-    ? `/api/image?url=${encodeURIComponent(
-        `https:${game.cover.url.replace('t_thumb', 't_cover_big')}`,
-      )}`
-    : '/game-placeholder.svg';
+  const normalizeIgdbImage = (url?: string, variant = 't_cover_big') =>
+    url
+      ? `/api/image?url=${encodeURIComponent(
+          `https:${url.replace('t_thumb', variant)}`,
+        )}`
+      : undefined;
+
+  const screenshotSource = game.screenshots?.[0]?.url;
+  const coverSource = game.cover?.url;
+  const screenshotUrl = normalizeIgdbImage(screenshotSource, 't_screenshot_huge');
+  const coverUrl = normalizeIgdbImage(coverSource, 't_cover_big');
 
   // Get the earliest release date for this game
   const releaseDate = game.release_dates?.[0]?.date || game.first_release_date;
-  const releaseDateHuman = game.release_dates?.[0]?.human || 
+  const releaseDateHuman = game.release_dates?.[0]?.human ||
     (releaseDate ? formatReleaseDate(releaseDate) : 'TBA');
 
   // Get platform names
@@ -28,18 +33,21 @@ export function GameCard({ game }: GameCardProps) {
     || game.platforms?.map(p => p.name) 
     || [];
 
+  const selectedImageUrl = screenshotUrl || coverUrl || '/game-placeholder.svg';
+  const imageAspect = screenshotUrl ? 'aspect-[16/9]' : 'aspect-[3/4]';
+
   return (
     <Link href={`/game/${game.id}`}>
       <div className="group relative overflow-hidden rounded-2xl border border-zinc-200/70 bg-white/80 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl dark:border-zinc-800/70 dark:bg-zinc-900/80">
         {/* Cover Image */}
-        <div className="relative aspect-[3/4] overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+        <div className={`relative ${imageAspect} w-full overflow-hidden rounded-t-2xl bg-zinc-100 dark:bg-zinc-800`}> 
           <Image
-            src={coverUrl}
+            src={selectedImageUrl}
             alt={game.name}
             fill
             unoptimized
             className="object-cover transition-transform group-hover:scale-105"
-            sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, (max-width: 1280px) 33vw, 25vw"
+            sizes="(max-width: 640px) 90vw, (max-width: 1024px) 70vw, 33vw"
           />
         </div>
 
