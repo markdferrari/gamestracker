@@ -60,6 +60,7 @@ export interface IGDBGame {
   platforms?: Array<{ id: number; name: string }>;
   screenshots?: Array<{ url: string }>;
   similar_games?: Array<{ id: number; name: string; cover?: { url: string } }>;
+  genres?: Array<{ id: number; name: string }>;
   release_dates?: Array<{
     human: string;
     date: number;
@@ -452,7 +453,7 @@ export async function searchGameByName(name: string): Promise<IGDBGame | null> {
  */
 export async function getGameById(id: number): Promise<IGDBGame | null> {
   const query = `
-    fields name, summary, cover.url, first_release_date, platforms.name, screenshots.url, release_dates.human, release_dates.date, release_dates.date_format, release_dates.platform.name, release_dates.platform.id, websites.category, websites.url, external_games.category, external_games.uid, aggregated_rating, aggregated_rating_count, similar_games.id, similar_games.name, similar_games.cover.url;
+    fields name, summary, cover.url, first_release_date, platforms.name, screenshots.url, release_dates.human, release_dates.date, release_dates.date_format, release_dates.platform.name, release_dates.platform.id, websites.category, websites.url, external_games.category, external_games.uid, aggregated_rating, aggregated_rating_count, similar_games.id, similar_games.name, similar_games.cover.url, genres.name;
     where id = ${id};
   `;
 

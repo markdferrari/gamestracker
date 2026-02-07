@@ -7,7 +7,7 @@ import { TrendingSection } from '@/components/TrendingSection';
 import { Suspense } from 'react';
 
 interface PageProps {
-  searchParams: Promise<{ platform?: string; view?: string }>;
+  searchParams: Promise<{ platform?: string; view?: string; genre?: string }>;
 }
 
 export default async function Home({ searchParams }: PageProps) {
