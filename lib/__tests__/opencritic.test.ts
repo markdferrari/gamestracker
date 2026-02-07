@@ -1,9 +1,35 @@
+jest.mock('../igdb', () => {
+  const actual = jest.requireActual('../igdb');
+  return {
+    __esModule: true,
+    ...actual,
+    searchGameByName: jest.fn(),
+  };
+});
+
+import { searchGameByName } from '../igdb';
 import {
   getReviewedThisWeek,
   getRecentlyReleased,
   resetOpenCriticCacheForTests,
   resetOpenCriticRateLimiterForTests,
 } from '../opencritic';
+
+const searchGameByNameMock = searchGameByName as jest.MockedFunction<typeof searchGameByName>;
+const originalIgdbClientId = process.env.IGDB_CLIENT_ID;
+const originalIgdbClientSecret = process.env.IGDB_CLIENT_SECRET;
+
+beforeEach(() => {
+  process.env.IGDB_CLIENT_ID = 'test-client-id';
+  process.env.IGDB_CLIENT_SECRET = 'test-client-secret';
+  searchGameByNameMock.mockReset();
+  searchGameByNameMock.mockResolvedValue(null);
+});
+
+afterEach(() => {
+  process.env.IGDB_CLIENT_ID = originalIgdbClientId;
+  process.env.IGDB_CLIENT_SECRET = originalIgdbClientSecret;
+});
 
 describe('getReviewedThisWeek', () => {
   const originalFetch = globalThis.fetch;
@@ -57,6 +83,11 @@ describe('getReviewedThisWeek', () => {
     } as Response);
 
     globalThis.fetch = fetchMock;
+    searchGameByNameMock.mockImplementation(async (name) => ({
+      id: name === 'Test Game 1' ? 101 : 102,
+      name,
+      cover: { url: `https://covers/${encodeURIComponent(name)}.jpg` },
+    }));
 
     const result = await getReviewedThisWeek();
 
@@ -74,6 +105,10 @@ describe('getReviewedThisWeek', () => {
     expect(result).toHaveLength(2);
     expect(result[0].name).toBe('Test Game 1');
     expect(result[0].topCriticScore).toBe(85);
+    expect(searchGameByNameMock).toHaveBeenCalledWith('Test Game 1');
+    expect(searchGameByNameMock).toHaveBeenCalledWith('Test Game 2');
+    expect(result[0].igdbCoverUrl).toBe('https://covers/Test%20Game%201.jpg');
+    expect(result[0].igdbId).toBe(101);
   });
 
   it('should handle games with missing optional fields', async () => {
@@ -341,6 +376,11 @@ describe('getRecentlyReleased', () => {
     } as Response);
 
     globalThis.fetch = fetchMock;
+    searchGameByNameMock.mockImplementation(async (name) => ({
+      id: name === 'Test Game 1' ? 201 : 202,
+      name,
+      cover: { url: `https://covers/${encodeURIComponent(name)}.jpg` },
+    }));
 
     const result = await getRecentlyReleased();
 
@@ -359,6 +399,10 @@ describe('getRecentlyReleased', () => {
     expect(result[0].name).toBe('Test Game 1');
     expect(result[0].platforms).toEqual([{ id: 167, name: 'PlayStation 5' }]);
     expect(result[0].releaseDate).toBe('2026-02-06');
+    expect(searchGameByNameMock).toHaveBeenCalledWith('Test Game 1');
+    expect(searchGameByNameMock).toHaveBeenCalledWith('Test Game 2');
+    expect(result[0].igdbCoverUrl).toBe('https://covers/Test%20Game%201.jpg');
+    expect(result[0].igdbId).toBe(201);
   });
 
   it('should handle games with missing optional fields', async () => {

@@ -1,8 +1,8 @@
 import { getUpcomingPSGames, getRecentlyReleasedGames } from '@/lib/igdb';
 import type { IGDBGame } from '@/lib/igdb';
 import { GameCard } from '@/components/GameCard';
-import { PlatformFilter } from '@/components/PlatformFilter';
 import { LatestReviewsSection } from '@/components/LatestReviewsSection';
+import { PlatformFilter } from '@/components/PlatformFilter';
 import { TrendingSection } from '@/components/TrendingSection';
 import { Suspense } from 'react';
 
@@ -35,99 +35,92 @@ export default async function Home({ searchParams }: PageProps) {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.15),_transparent_45%)]">
-      <main className="mx-auto flex max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:px-8">
-        {/* Left Sidebar - Latest Reviews */}
-        <Suspense fallback={
-          <div className="w-80 flex-shrink-0">
-            <div className="animate-pulse rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-              <div className="mb-4 h-6 rounded bg-zinc-200 dark:bg-zinc-700" />
-              <div className="space-y-3">
+      <main className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-10 sm:px-6 lg:px-8">
+        <section className="rounded-3xl border border-zinc-200/70 bg-white/90 p-8 shadow-xl shadow-slate-900/5 dark:border-zinc-800/80 dark:bg-zinc-950/75">
+          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-sky-500">
+            Tracking all the upcoming releases so you don't have to
+          </p>
+          <h1 className="mt-4 text-4xl font-bold leading-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
+            Stay ahead of every big game drop and score update.
+          </h1>
+          <p className="mt-4 text-lg text-zinc-600 dark:text-zinc-300">
+            We surface verified release windows, recent review momentum, and trending scores so you can queue your next session with confidence.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button className="rounded-full bg-sky-500 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/40 transition hover:bg-sky-600">
+              Browse upcoming
+            </button>
+            <button className="rounded-full border border-zinc-900/10 px-6 py-2 text-sm font-semibold text-zinc-900 transition hover:border-sky-500 hover:text-sky-500 dark:border-zinc-800/60 dark:text-zinc-100">
+              Save a reminder
+            </button>
+          </div>
+        </section>
+
+        <div className="grid gap-8 lg:grid-cols-[260px_minmax(0,1fr)_260px]">
+          <aside className="space-y-6">
+            <Suspense fallback={
+              <div className="rounded-2xl border border-zinc-200/70 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                <div className="mb-2 h-4 rounded bg-zinc-200 dark:bg-zinc-700" />
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-24 rounded bg-zinc-100 dark:bg-zinc-800" />
+                  <div key={i} className="mb-2 h-20 rounded bg-zinc-100 dark:bg-zinc-800" />
                 ))}
               </div>
-            </div>
-          </div>
-        }>
-          <div className="hidden w-80 flex-shrink-0 lg:block">
-            <div className="sticky top-4 h-[calc(100vh-8rem)]">
-              <LatestReviewsSection />
-            </div>
-          </div>
-        </Suspense>
-
-        {/* Main Content */}
-        <div className="flex-1">
-          {/* Mobile: stacked carousels */}
-          <div className="mb-10 lg:hidden" data-testid="mobile-carousels">
-            <Suspense fallback={<div />}> 
-              <div className="space-y-8">
-                <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-                  <LatestReviewsSection />
-                </div>
-                <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-                  <TrendingSection />
-                </div>
+            }>
+              <div className="rounded-2xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70">
+                <LatestReviewsSection />
               </div>
             </Suspense>
-          </div>
+          </aside>
 
-          {/* Platform Filter */}
-          <Suspense fallback={<div>Loading filters...</div>}>
-            <div className="mb-8 flex justify-center">
-              <PlatformFilter />
-            </div>
-          </Suspense>
+          <section className="space-y-6">
+            {error && (
+              <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-sm text-red-600">
+                {error}
+              </div>
+            )}
 
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950">
-            <p className="text-sm text-red-800 dark:text-red-200">
-              <strong>Error:</strong> {error}
-            </p>
-            <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-              Make sure you've set IGDB_CLIENT_ID and IGDB_CLIENT_SECRET in .env.local
-            </p>
-          </div>
-        )}
-
-        {/* Games Grid */}
-        {games.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {games.map((game) => (
-              <GameCard key={game.id} game={game} />
-            ))}
-          </div>
-        ) : (
-          !error && (
-            <div className="rounded-lg border border-zinc-200 bg-white p-12 text-center dark:border-zinc-800 dark:bg-zinc-900">
-              <p className="text-zinc-600 dark:text-zinc-400">
-                {view === 'recent' ? 'No recently released games found.' : 'No upcoming games found.'}
-              </p>
-            </div>
-          )
-        )}
-        </div>
-
-        {/* Right Sidebar - Trending */}
-        <Suspense fallback={
-          <div className="w-80 flex-shrink-0">
-            <div className="animate-pulse rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-              <div className="mb-4 h-6 rounded bg-zinc-200 dark:bg-zinc-700" />
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-24 rounded bg-zinc-100 dark:bg-zinc-800" />
-                ))}
+            <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70">
+              <div className="mt-5">
+                <TrendingSection />
               </div>
             </div>
-          </div>
-        }>
-          <div className="hidden w-80 flex-shrink-0 lg:block">
-            <div className="sticky top-4 h-[calc(100vh-8rem)]">
-              <TrendingSection />
+
+            <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+                  {view === 'recent' ? 'Recently released' : 'Upcoming releases'}
+                </h2>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  Ranked by nearest release
+                </p>
+              </div>
+              <div className="mt-5 space-y-4">
+                {games.length > 0 ? (
+                  games.map((game) => <GameCard key={game.id} game={game} />)
+                ) : (
+                  !error && (
+                    <div className="rounded-2xl border border-dashed border-zinc-200/70 bg-zinc-50/70 p-8 text-center text-sm text-zinc-600 dark:border-zinc-800/70 dark:bg-zinc-900/60 dark:text-zinc-300">
+                      {view === 'recent' ? 'No recently released games found.' : 'No upcoming games found.'}
+                    </div>
+                  )
+                )}
+              </div>
             </div>
-          </div>
-        </Suspense>
+          </section>
+
+          <aside className="space-y-6">
+            <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70">
+              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-zinc-500">
+                Filters
+              </p>
+              <div className="mt-4">
+                <Suspense fallback={<div>Loading filters...</div>}>
+                  <PlatformFilter />
+                </Suspense>
+              </div>
+            </div>
+          </aside>
+        </div>
       </main>
     </div>
   );
