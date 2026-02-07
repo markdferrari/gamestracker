@@ -7,12 +7,13 @@ import { TrendingSection } from '@/components/TrendingSection';
 import { Suspense } from 'react';
 
 interface PageProps {
-  searchParams: Promise<{ platform?: string; view?: string }>;
+  searchParams: Promise<{ platform?: string; view?: string; studio?: string }>;
 }
 
 export default async function Home({ searchParams }: PageProps) {
   const params = await searchParams;
   const platformParam = params.platform || '1';
+  const studioParam = params.studio;
   const platformFilter =
     platformParam === 'pc'
       ? ({ type: 'family', id: 4 } as const)
@@ -22,11 +23,14 @@ export default async function Home({ searchParams }: PageProps) {
   let games: IGDBGame[] = [];
   let error = null;
 
+  const parsedStudioId = studioParam ? parseInt(studioParam, 10) : undefined;
+  const studioFilterId = typeof parsedStudioId === 'number' && !Number.isNaN(parsedStudioId) ? parsedStudioId : undefined;
+
   try {
     if (view === 'recent') {
-      games = await getRecentlyReleasedGames(platformFilter);
+      games = await getRecentlyReleasedGames(platformFilter, studioFilterId);
     } else {
-      games = await getUpcomingPSGames(platformFilter);
+      games = await getUpcomingPSGames(platformFilter, studioFilterId);
     }
   } catch (e) {
     error = e instanceof Error ? e.message : 'Failed to fetch games';
