@@ -63,6 +63,18 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
     )}`
   ) || [];
 
+  const similarGames = (game.similar_games ?? [])
+    .slice(0, 6)
+    .map((similar) => ({
+      id: similar.id,
+      name: similar.name,
+      coverUrl: similar.cover?.url
+        ? `/api/image?url=${encodeURIComponent(
+            `https:${similar.cover.url.replace('t_thumb', 't_cover_big')}`,
+          )}`
+        : null,
+    }));
+
   // Get release date
   const releaseDate = game.release_dates?.[0]?.date || game.first_release_date;
   const releaseDateHuman = game.release_dates?.[0]?.human || 
@@ -216,6 +228,43 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
                 </h2>
                 <div className="mt-4">
                   <ScreenshotGallery screenshots={screenshots} title={game.name} />
+                </div>
+              </div>
+            )}
+
+            {similarGames.length > 0 && (
+              <div className="mt-8">
+                <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+                  Similar games
+                </h2>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {similarGames.map((similar) => (
+                    <Link
+                      key={similar.id}
+                      href={`/game/${similar.id}`}
+                      className="group rounded-2xl border border-zinc-200/70 bg-white/90 p-3 transition hover:border-sky-500 hover:shadow-lg dark:border-zinc-800/80 dark:bg-zinc-950/70"
+                    >
+                      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-900">
+                        {similar.coverUrl ? (
+                          <Image
+                            src={similar.coverUrl}
+                            alt={similar.name}
+                            fill
+                            unoptimized
+                            className="object-cover"
+                            sizes="(max-width: 1024px) 50vw, 160px"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-[0.55rem] uppercase tracking-[0.4em] text-zinc-400">
+                            No cover
+                          </div>
+                        )}
+                      </div>
+                      <p className="mt-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                        {similar.name}
+                      </p>
+                    </Link>
+                  ))}
                 </div>
               </div>
             )}
