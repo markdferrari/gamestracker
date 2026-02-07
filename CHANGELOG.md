@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/markdferrari/gamestracker/compare/v1.3.0...v1.4.0) (2026-02-07)
+
+
+### Features
+
+* improve filters ([#17](https://github.com/markdferrari/gamestracker/issues/17)) ([033a28c](https://github.com/markdferrari/gamestracker/commit/033a28c2dcd7575d3fe155eafef8f511150d2015))
+
 # [1.3.0](https://github.com/markdferrari/gamestracker/compare/v1.2.2...v1.3.0) (2026-02-07)
 
 
