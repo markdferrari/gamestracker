@@ -1,4 +1,5 @@
 // OpenCritic API helpers for fetching game reviews
+import { searchGameByName } from '@/lib/igdb';
 
 const OPENCRITIC_BASE_URL = 'https://opencritic-api.p.rapidapi.com';
 
@@ -76,6 +77,68 @@ export function resetOpenCriticRateLimiterForTests() {
   if (process.env.NODE_ENV !== 'test') return;
   openCriticRateLimitQueue = Promise.resolve();
   openCriticNextAllowedAt = 0;
+}
+
+type IgdbLookupResult = { coverUrl?: string; id?: number } | null;
+
+async function enrichWithIgdbFallbacks<
+  T extends { name: string; igdbCoverUrl?: string; igdbId?: number }
+>(items: T[]): Promise<T[]> {
+  if (items.length === 0) return items;
+
+  const hasCredentials = Boolean(
+    process.env.IGDB_CLIENT_ID && process.env.IGDB_CLIENT_SECRET
+  );
+
+  if (!hasCredentials) {
+    return items;
+  }
+
+  const lookupCache = new Map<string, IgdbLookupResult>();
+
+  const enriched = await Promise.all(
+    items.map(async (item) => {
+      const trimmedName = item.name?.trim();
+      if (!trimmedName) {
+        return item;
+      }
+
+      const cacheKey = trimmedName.toLowerCase();
+
+      if (!lookupCache.has(cacheKey)) {
+        let result: IgdbLookupResult = null;
+        try {
+          const igdb = await searchGameByName(trimmedName);
+          if (igdb) {
+            result = {
+              coverUrl: igdb.cover?.url,
+              id: igdb.id,
+            };
+          }
+        } catch (error) {
+          console.error(
+            `Failed to enrich OpenCritic entry "${item.name}" with IGDB data`,
+            error,
+          );
+        }
+
+        lookupCache.set(cacheKey, result);
+      }
+
+      const cached = lookupCache.get(cacheKey);
+      if (!cached) {
+        return item;
+      }
+
+      return {
+        ...item,
+        igdbCoverUrl: item.igdbCoverUrl ?? cached.coverUrl,
+        igdbId: item.igdbId ?? cached.id,
+      };
+    }),
+  );
+
+  return enriched;
 }
 
 const scheduleOpenCriticRequestSlot = async () => {
@@ -295,7 +358,7 @@ export async function getReviewedThisWeek(
       }
 
       const data: OpenCriticReview[] = await response.json();
-      return data;
+      return enrichWithIgdbFallbacks(data);
     }
   );
 
@@ -342,7 +405,7 @@ export async function getRecentlyReleased(
       }
 
       const data: TrendingGame[] = await response.json();
-      return data;
+      return enrichWithIgdbFallbacks(data);
     }
   );
 
