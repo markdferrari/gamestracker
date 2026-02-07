@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/markdferrari/gamestracker/compare/v1.2.2...v1.3.0) (2026-02-07)
+
+
+### Features
+
+* homepage redesign ([#16](https://github.com/markdferrari/gamestracker/issues/16)) ([90a77a0](https://github.com/markdferrari/gamestracker/commit/90a77a0f51bc57fd9c2aadd324b916c6a1f4b7d9))
+
 ## [1.2.2](https://github.com/markdferrari/gamestracker/compare/v1.2.1...v1.2.2) (2026-02-06)
 
 
