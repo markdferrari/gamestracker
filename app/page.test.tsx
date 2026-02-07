@@ -5,6 +5,7 @@ import Home from './page';
 jest.mock('@/lib/igdb', () => ({
   getUpcomingPSGames: jest.fn().mockResolvedValue([]),
   getRecentlyReleasedGames: jest.fn().mockResolvedValue([]),
+  getGameGenres: jest.fn().mockResolvedValue([]),
 }));
 
 jest.mock('@/components/GameCard', () => ({

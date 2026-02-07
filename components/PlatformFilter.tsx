@@ -9,34 +9,58 @@ const PLATFORMS = [
   { id: 'pc', name: 'PC' },
 ];
 
-export function PlatformFilter() {
+interface PlatformFilterProps {
+  genres: Array<{ id: number; name: string }>;
+}
+
+export function PlatformFilter({ genres }: PlatformFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentPlatform = searchParams.get('platform') || '1';
+  const currentGenre = searchParams.get('genre') || '';
 
-  const handlePlatformChange = (platformId: string) => {
+  const handleSelectChange = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
-    params.set('platform', platformId);
+    if (value) {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
     router.push(`/?${params.toString()}`);
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <div className="flex flex-wrap gap-2 rounded-full border border-zinc-200/70 bg-white/80 p-2 shadow-sm dark:border-zinc-800/70 dark:bg-zinc-900/80">
-        {PLATFORMS.map((platform) => (
-          <button
-            key={platform.id}
-            onClick={() => handlePlatformChange(platform.id)}
-            className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wide transition ${
-              currentPlatform === platform.id
-                ? 'bg-sky-500 text-white shadow shadow-sky-500/40'
-                : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800'
-            }`}
-          >
-            {platform.name}
-          </button>
-        ))}
-      </div>
+    <div className="grid gap-4">
+      <label className="text-xs uppercase tracking-[0.3em] text-zinc-500">
+        Platform
+        <select
+          value={currentPlatform}
+          onChange={(event) => handleSelectChange('platform', event.target.value)}
+          className="mt-2 w-full rounded-2xl border border-zinc-200/70 bg-white px-3 py-2 text-sm text-zinc-800 dark:border-zinc-800/70 dark:bg-zinc-950/70 dark:text-zinc-100"
+        >
+          {PLATFORMS.map((platform) => (
+            <option key={platform.id} value={platform.id}>
+              {platform.name}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="text-xs uppercase tracking-[0.3em] text-zinc-500">
+        Genre
+        <select
+          value={currentGenre}
+          onChange={(event) => handleSelectChange('genre', event.target.value)}
+          className="mt-2 w-full rounded-2xl border border-zinc-200/70 bg-white px-3 py-2 text-sm text-zinc-800 dark:border-zinc-800/70 dark:bg-zinc-950/70 dark:text-zinc-100"
+        >
+          <option value="">All genres</option>
+          {genres.map((genre) => (
+            <option key={genre.id} value={genre.id.toString()}>
+              {genre.name}
+            </option>
+          ))}
+        </select>
+      </label>
     </div>
   );
 }

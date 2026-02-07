@@ -1,4 +1,4 @@
-import { getUpcomingPSGames, getRecentlyReleasedGames } from '@/lib/igdb';
+import { getGameGenres, getUpcomingPSGames, getRecentlyReleasedGames } from '@/lib/igdb';
 import type { IGDBGame } from '@/lib/igdb';
 import { GameCard } from '@/components/GameCard';
 import { LatestReviewsSection } from '@/components/LatestReviewsSection';
@@ -18,20 +18,25 @@ export default async function Home({ searchParams }: PageProps) {
       ? ({ type: 'family', id: 4 } as const)
       : ({ type: 'family', id: parseInt(platformParam, 10) || 1 } as const);
   const view = params.view || 'upcoming';
+  const genreParam = params.genre;
+  const genresPromise = getGameGenres();
   
   let games: IGDBGame[] = [];
   let error = null;
 
   try {
+    const genreId = genreParam ? parseInt(genreParam, 10) : undefined;
     if (view === 'recent') {
-      games = await getRecentlyReleasedGames(platformFilter);
+      games = await getRecentlyReleasedGames(platformFilter, genreId);
     } else {
-      games = await getUpcomingPSGames(platformFilter);
+      games = await getUpcomingPSGames(platformFilter, genreId);
     }
   } catch (e) {
     error = e instanceof Error ? e.message : 'Failed to fetch games';
     games = [];
   }
+
+  const genres = await genresPromise.catch(() => []);
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.15),_transparent_45%)]">
@@ -115,7 +120,7 @@ export default async function Home({ searchParams }: PageProps) {
               </p>
               <div className="mt-4">
                 <Suspense fallback={<div>Loading filters...</div>}>
-                  <PlatformFilter />
+                  <PlatformFilter genres={genres} />
                 </Suspense>
               </div>
             </div>
