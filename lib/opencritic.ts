@@ -335,7 +335,7 @@ export async function getReviewedThisWeek(
   }
 
   const cacheKey = 'opencritic:reviewed-this-week';
-  const cacheTtlMs = 7 * 24 * 60 * 60 * 1000;
+  const cacheTtlMs = 24 * 60 * 60 * 1000;
 
   const cachedData = await getCachedOrCreate<OpenCriticReview[]>(
     cacheKey,
@@ -382,7 +382,7 @@ export async function getRecentlyReleased(
   }
 
   const cacheKey = 'opencritic:recently-released';
-  const cacheTtlMs = 7 * 24 * 60 * 60 * 1000;
+  const cacheTtlMs = 24 * 60 * 60 * 1000;
 
   const cachedData = await getCachedOrCreate<TrendingGame[]>(
     cacheKey,
