@@ -3,7 +3,7 @@ import type {} from "./.sst/platform/config.d.ts";
 export default $config({
   app(input) {
     return {
-      name: "gamestracker",
+      name: "whencaniplayit",
       removal: input?.stage === "production" ? "retain" : "remove",
       home: "aws",
       providers: {
@@ -18,7 +18,7 @@ export default $config({
     const certificateArn = "arn:aws:acm:us-east-1:632700996244:certificate/15b3fa06-9db9-440e-8164-f8cd8b910efc"
     const zoneId = "Z01083643VX0XZEEC21MK"
 
-    const site = new sst.aws.Nextjs("GameTracker", {
+    const site = new sst.aws.Nextjs("WhenCanPlayIt", {
       domain: {
         name: "www.whencaniplayit.com",
         aliases: ["whencaniplayit.com"],

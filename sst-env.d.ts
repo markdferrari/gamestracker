@@ -6,7 +6,7 @@
 
 declare module "sst" {
   export interface Resource {
-    "GameTracker": {
+    "WhenCanPlayIt": {
       "type": "sst.aws.Nextjs"
       "url": string
     }
