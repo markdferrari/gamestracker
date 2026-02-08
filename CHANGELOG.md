@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/markdferrari/gamestracker/compare/v1.4.0...v1.5.0) (2026-02-08)
+
+
+### Features
+
+* improved ui ([#18](https://github.com/markdferrari/gamestracker/issues/18)) ([c9e40ca](https://github.com/markdferrari/gamestracker/commit/c9e40ca34ff58692234b2fca3eccfaa8b2b29059))
+
 # [1.4.0](https://github.com/markdferrari/gamestracker/compare/v1.3.0...v1.4.0) (2026-02-07)
 
 
