@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/markdferrari/gamestracker/compare/v1.6.0...v1.6.1) (2026-02-08)
+
+
+### Bug Fixes
+
+* incorrect similar games field ([#20](https://github.com/markdferrari/gamestracker/issues/20)) ([97a750a](https://github.com/markdferrari/gamestracker/commit/97a750a6474cf7526ce021ddfe13bc2e35c1f2e7))
+
 # [1.6.0](https://github.com/markdferrari/gamestracker/compare/v1.5.0...v1.6.0) (2026-02-08)
 
 
