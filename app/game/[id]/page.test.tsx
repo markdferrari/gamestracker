@@ -50,38 +50,29 @@ jest.mock("@/lib/notes", () => ({
   getGameNote: jest.fn(),
 }));
 
+const mockGame: IGDBGame = {
+  id: 1,
+  name: "Test Game",
+  cover: { url: "//images.igdb.com/igdb/image/upload/t_thumb/test.jpg" },
+  release_dates: [
+    {
+      human: "Feb 15, 2026",
+      date: Math.floor(new Date("2026-02-15T00:00:00Z").getTime() / 1000),
+      platform: { id: 167, name: "PlayStation 5" },
+    },
+  ],
+  platforms: [{ id: 167, name: "PlayStation 5" }],
+  summary: "Summary",
+  screenshots: [],
+};
+
 describe("GameDetailPage", () => {
   const getGameByIdMock = jest.requireMock("@/lib/igdb").getGameById as jest.Mock;
   const getSimilarGamesByIdMock = jest.requireMock("@/lib/igdb").getSimilarGamesById as jest.Mock;
   const getGameNoteMock = jest.requireMock("@/lib/notes").getGameNote as jest.Mock;
 
-  beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(new Date("2026-02-05T00:00:00Z"));
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
-  it("renders a prominent release date badge", async () => {
-    const game: IGDBGame = {
-      id: 1,
-      name: "Test Game",
-      cover: { url: "//images.igdb.com/igdb/image/upload/t_thumb/test.jpg" },
-      release_dates: [
-        {
-          human: "Feb 15, 2026",
-          date: Math.floor(new Date("2026-02-15T00:00:00Z").getTime() / 1000),
-          platform: { id: 167, name: "PlayStation 5" },
-        },
-      ],
-      platforms: [{ id: 167, name: "PlayStation 5" }],
-      summary: "Summary",
-      screenshots: [],
-    };
-
-    getGameByIdMock.mockResolvedValue(game);
+  const renderGamePage = async () => {
+    getGameByIdMock.mockResolvedValue(mockGame);
     getSimilarGamesByIdMock.mockResolvedValue([]);
     getGameNoteMock.mockResolvedValue(null);
 
@@ -90,6 +81,20 @@ describe("GameDetailPage", () => {
     });
 
     render(ui);
+  };
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date("2026-02-05T00:00:00Z"));
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it("renders a prominent release date badge", async () => {
+    await renderGamePage();
 
     const badge = screen.getByTestId("release-date-hero");
     expect(badge).toHaveTextContent("Feb 15, 2026");
@@ -100,5 +105,14 @@ describe("GameDetailPage", () => {
     expect(coverWrapper.className).toContain("max-w-[min(90vw,360px)]");
     expect(coverWrapper.className).toContain("overflow-hidden");
     expect(coverWrapper.className).toContain("min-w-0");
+  });
+
+  it("caps the layout width to the cover size on narrow screens", async () => {
+    await renderGamePage();
+
+    const main = screen.getByRole("main");
+    expect(main).toHaveClass("w-full");
+    expect(main).toHaveClass("max-w-[min(100vw,360px)]");
+    expect(main).toHaveClass("lg:max-w-6xl");
   });
 });
