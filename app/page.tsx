@@ -62,6 +62,18 @@ export default async function Home({ searchParams }: PageProps) {
           </div>
         </section>
 
+        {/* Mobile filters — visible at top on small screens */}
+        <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70 lg:hidden">
+          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-zinc-500">
+            Filters
+          </p>
+          <div className="mt-4">
+            <Suspense fallback={<div>Loading filters...</div>}>
+              <PlatformFilter genres={genres} />
+            </Suspense>
+          </div>
+        </div>
+
         <div className="grid gap-8 lg:grid-cols-[260px_minmax(0,1fr)_260px]">
           <aside className="space-y-6">
             <Suspense fallback={
@@ -112,7 +124,7 @@ export default async function Home({ searchParams }: PageProps) {
             </div>
           </section>
 
-          <aside className="space-y-6">
+          <aside className="space-y-6 hidden lg:block">
             <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70">
               <p className="text-xs font-semibold uppercase tracking-[0.4em] text-zinc-500">
                 Filters

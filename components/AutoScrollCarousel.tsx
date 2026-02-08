@@ -67,13 +67,13 @@ export function AutoScrollCarousel<T>({
 
   return (
     <div
-      className="relative w-full overflow-hidden"
+      className="relative w-full max-w-full overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
       <div
         ref={scrollRef}
-        className="hide-scrollbar w-full overflow-x-scroll touch-pan-y"
+        className="hide-scrollbar w-full max-w-full overflow-x-auto touch-pan-y overscroll-x-contain"
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',

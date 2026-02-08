@@ -39,6 +39,7 @@ describe('Home page', () => {
     expect(screen.getByText('Stay ahead of every big game drop and score update.')).toBeInTheDocument();
     expect(screen.getByText('LatestReviewsSection')).toBeInTheDocument();
     expect(screen.getByText('TrendingSection')).toBeInTheDocument();
-    expect(screen.getByText('Filters')).toBeInTheDocument();
+    // Filters appears both on mobile and desktop, so use queryAllByText
+    expect(screen.queryAllByText('Filters').length).toBeGreaterThan(0);
   });
 });
