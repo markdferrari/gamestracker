@@ -1,7 +1,7 @@
 'use client';
 
 import type { TrendingGame } from '@/lib/opencritic';
-import { TrendingCarousel } from './TrendingCarousel';
+import { EmblaCarouselTrending } from './EmblaCarouselTrending';
 import { Flame } from 'lucide-react';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -63,7 +63,7 @@ export function TrendingSection() {
     }
 
     if (games.length > 0) {
-      return <TrendingCarousel games={games} />;
+      return <EmblaCarouselTrending games={games} />;
     }
 
     return (

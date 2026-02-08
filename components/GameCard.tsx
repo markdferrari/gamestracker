@@ -6,6 +6,7 @@ import { Gamepad2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { IGDBGame } from '@/lib/igdb';
 import { formatReleaseDate } from '@/lib/igdb';
+import { MagicCard } from './MagicCard';
 
 interface GameCardProps {
   game: IGDBGame;
@@ -53,7 +54,12 @@ export function GameCard({ game }: GameCardProps) {
 
   return (
     <Link href={`/game/${game.id}`}>
-      <div className="group overflow-hidden rounded-2xl border border-zinc-200/70 bg-white/80 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl dark:border-zinc-800/70 dark:bg-zinc-900/80">
+      <MagicCard
+        gradientSize={250}
+        gradientColor="#0ea5e9"
+        gradientOpacity={0.15}
+        className="rounded-2xl border border-zinc-200/70 bg-white/80 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl dark:border-zinc-800/70 dark:bg-zinc-900/80"
+      >
         <div className="flex flex-col md:flex-row">
           <div className="relative w-24 aspect-[3/4] overflow-hidden bg-zinc-100 dark:bg-zinc-800 md:w-40 md:shrink-0">
             <Image
@@ -61,7 +67,7 @@ export function GameCard({ game }: GameCardProps) {
               alt={game.name}
               fill
               unoptimized
-              className="object-contain p-2 transition-opacity group-hover:opacity-95"
+              className="object-contain p-2 transition-opacity"
               sizes="(max-width: 767px) 96px, 180px"
             />
           </div>
@@ -82,7 +88,7 @@ export function GameCard({ game }: GameCardProps) {
             )}
           </div>
         </div>
-      </div>
+      </MagicCard>
     </Link>
   );
 }

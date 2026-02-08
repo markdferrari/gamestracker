@@ -29,8 +29,13 @@ jest.mock("@/components/ScreenshotGallery", () => ({
   ScreenshotGallery: ({ title }: { title: string }) => <div>Gallery {title}</div>,
 }));
 
+jest.mock("@/components/SimilarGamesCarousel", () => ({
+  SimilarGamesCarousel: () => <div>Similar Games Carousel</div>,
+}));
+
 jest.mock("@/lib/igdb", () => ({
   getGameById: jest.fn(),
+  getSimilarGamesById: jest.fn(),
   formatReleaseDate: jest.fn((timestamp: number) => {
     const date = new Date(timestamp * 1000);
     return date.toLocaleDateString("en-US", {
@@ -47,6 +52,7 @@ jest.mock("@/lib/notes", () => ({
 
 describe("GameDetailPage", () => {
   const getGameByIdMock = jest.requireMock("@/lib/igdb").getGameById as jest.Mock;
+  const getSimilarGamesByIdMock = jest.requireMock("@/lib/igdb").getSimilarGamesById as jest.Mock;
   const getGameNoteMock = jest.requireMock("@/lib/notes").getGameNote as jest.Mock;
 
   beforeEach(() => {
@@ -76,6 +82,7 @@ describe("GameDetailPage", () => {
     };
 
     getGameByIdMock.mockResolvedValue(game);
+    getSimilarGamesByIdMock.mockResolvedValue([]);
     getGameNoteMock.mockResolvedValue(null);
 
     const ui = await GameDetailPage({

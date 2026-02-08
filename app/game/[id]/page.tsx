@@ -2,11 +2,12 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { getGameById, formatReleaseDate } from '@/lib/igdb';
+import { getGameById, getSimilarGamesById, formatReleaseDate } from '@/lib/igdb';
 import { getGameNote } from '@/lib/notes';
 import { GameLinks } from '@/components/GameLinks';
 import { ReviewSection } from '@/components/ReviewSection';
 import { ScreenshotGallery } from '@/components/ScreenshotGallery';
+import { SimilarGamesCarousel } from '@/components/SimilarGamesCarousel';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -39,9 +40,10 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
     notFound();
   }
 
-  // Fetch game data and user notes in parallel
-  const [game, note] = await Promise.all([
+  // Fetch game data, similar games, and user notes in parallel
+  const [game, similarGamesData, note] = await Promise.all([
     getGameById(gameId),
+    getSimilarGamesById(gameId),
     getGameNote(gameId),
   ]);
 
@@ -65,7 +67,7 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
         )}`,
     ) || [];
 
-  const similarGames = (game.similar_games ?? [])
+  const similarGames = (similarGamesData ?? [])
     .slice(0, 6)
     .map((similar) => ({
       id: similar.id,
@@ -292,7 +294,12 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
                   <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
                     Similar games
                   </h2>
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {/* Mobile carousel */}
+                  <div className="lg:hidden">
+                    <SimilarGamesCarousel games={similarGames} />
+                  </div>
+                  {/* Desktop grid */}
+                  <div className="hidden lg:grid gap-4 lg:grid-cols-3">
                     {similarGames.map((similar) => (
                       <Link
                         key={similar.id}
