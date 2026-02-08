@@ -1,6 +1,9 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Gamepad2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import type { IGDBGame } from '@/lib/igdb';
 import { formatReleaseDate } from '@/lib/igdb';
 
@@ -9,6 +12,21 @@ interface GameCardProps {
 }
 
 export function GameCard({ game }: GameCardProps) {
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    // Set initial state
+    setIsDesktop(window.innerWidth >= 768);
+
+    // Listen for resize
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const normalizeIgdbImage = (url?: string, variant = 't_cover_big') =>
     url
       ? `/api/image?url=${encodeURIComponent(
@@ -16,7 +34,8 @@ export function GameCard({ game }: GameCardProps) {
         )}`
       : undefined;
 
-  const coverUrl = normalizeIgdbImage(game.cover?.url, 't_cover_big');
+  // Use full cover on desktop, thumbnail on mobile
+  const coverUrl = normalizeIgdbImage(game.cover?.url, isDesktop ? 't_cover_big' : 't_thumb');
 
   const releaseDate = game.release_dates?.[0]?.date || game.first_release_date;
   const releaseDateHuman =
@@ -36,14 +55,14 @@ export function GameCard({ game }: GameCardProps) {
     <Link href={`/game/${game.id}`}>
       <div className="group overflow-hidden rounded-2xl border border-zinc-200/70 bg-white/80 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl dark:border-zinc-800/70 dark:bg-zinc-900/80">
         <div className="flex flex-col md:flex-row">
-          <div className="relative w-full aspect-[3/4] overflow-hidden bg-zinc-100 dark:bg-zinc-800 md:w-40 md:shrink-0">
+          <div className="relative w-24 aspect-[3/4] overflow-hidden bg-zinc-100 dark:bg-zinc-800 md:w-40 md:shrink-0">
             <Image
               src={selectedImageUrl}
               alt={game.name}
               fill
               unoptimized
-              className="object-contain p-3 transition-opacity group-hover:opacity-95"
-              sizes="(max-width: 640px) 90vw, (max-width: 1024px) 70vw, 180px"
+              className="object-contain p-2 transition-opacity group-hover:opacity-95"
+              sizes="(max-width: 767px) 96px, 180px"
             />
           </div>
 

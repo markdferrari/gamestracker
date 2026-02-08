@@ -23,6 +23,13 @@ jest.mock('next/link', () => ({
   ),
 }));
 
+// Mock window.innerWidth for responsive testing
+Object.defineProperty(window, 'innerWidth', {
+  writable: true,
+  configurable: true,
+  value: 1024, // Default to desktop width for tests
+});
+
 describe('GameCard', () => {
   const mockGame: IGDBGame = {
     id: 12345,
@@ -60,9 +67,10 @@ describe('GameCard', () => {
     expect(link).toHaveAttribute('href', '/game/12345');
   });
 
-  it('should render cover image with correct src', () => {
+  it('should render cover image with correct src (desktop)', () => {
     render(<GameCard game={mockGame} />);
     const img = screen.getByAltText('Test Game');
+    // In test environment with desktop width, t_cover_big is used
     expect(img).toHaveAttribute(
       'src',
       '/api/image?url=https%3A%2F%2Fimages.igdb.com%2Figdb%2Fimage%2Fupload%2Ft_cover_big%2Ftest.jpg',

@@ -74,7 +74,7 @@ export function LatestReviewsSection() {
         </h2>
       </div>
 
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden max-w-96 lg:max-w-full">
         {state === 'idle' || state === 'loading' ? (
           <div className="flex h-full items-center justify-center rounded-lg border border-zinc-200/70 bg-white/80 p-6 text-center dark:border-zinc-800/70 dark:bg-zinc-900/80">
             <div>
