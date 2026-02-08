@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/markdferrari/gamestracker/compare/v1.7.0...v1.7.1) (2026-02-08)
+
+
+### Bug Fixes
+
+* app name ([068c3a2](https://github.com/markdferrari/gamestracker/commit/068c3a21b1b638f38b3e8bb1cf313a6354e5ccdd))
+
 # [1.7.0](https://github.com/markdferrari/gamestracker/compare/v1.6.1...v1.7.0) (2026-02-08)
 
 
