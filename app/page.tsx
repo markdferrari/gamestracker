@@ -4,6 +4,7 @@ import { GameCard } from '@/components/GameCard';
 import { LatestReviewsSection } from '@/components/LatestReviewsSection';
 import { PlatformFilter } from '@/components/PlatformFilter';
 import { TrendingSection } from '@/components/TrendingSection';
+import { ViewToggle } from '@/components/ViewToggle';
 import { Suspense } from 'react';
 
 interface PageProps {
@@ -55,24 +56,7 @@ export default async function Home({ searchParams }: PageProps) {
           <p className="mt-4 text-lg text-zinc-600 dark:text-zinc-300">
             We surface verified release windows, recent review momentum, and trending scores so you can queue your next session with confidence.
           </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button className="rounded-full bg-sky-500 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/40 transition hover:bg-sky-600">
-              Browse upcoming
-            </button>
-          </div>
         </section>
-
-        {/* Mobile filters — visible at top on small screens */}
-        <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70 lg:hidden">
-          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-zinc-500">
-            Filters
-          </p>
-          <div className="mt-4">
-            <Suspense fallback={<div>Loading filters...</div>}>
-              <PlatformFilter genres={genres} />
-            </Suspense>
-          </div>
-        </div>
 
         <div className="grid gap-8 lg:grid-cols-[260px_minmax(0,1fr)_260px]">
           <aside className="space-y-6">
@@ -101,11 +85,23 @@ export default async function Home({ searchParams }: PageProps) {
               </div>
             )}
 
+            {/* Mobile filters — visible above gamecard component on small screens */}
+            <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70 lg:hidden">
+              <p className="text-xs font-semibold uppercase tracking-[0.4em] text-zinc-500">
+                Filters
+              </p>
+              <div className="mt-4">
+                <Suspense fallback={<div>Loading filters...</div>}>
+                  <PlatformFilter genres={genres} />
+                </Suspense>
+              </div>
+            </div>
+
             <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-                  {view === 'recent' ? 'Recently released' : 'Upcoming releases'}
-                </h2>
+                <Suspense fallback={<div className="inline-flex rounded-full bg-zinc-200 h-10 w-60 dark:bg-zinc-800" />}>
+                  <ViewToggle />
+                </Suspense>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
                   Ranked by nearest release
                 </p>

@@ -37,6 +37,7 @@ describe('Home page', () => {
     render(ui);
 
     expect(screen.getByText('Stay ahead of every big game drop and score update.')).toBeInTheDocument();
+    expect(screen.getByText('ViewToggle')).toBeInTheDocument();
     expect(screen.getByText('LatestReviewsSection')).toBeInTheDocument();
     expect(screen.getByText('TrendingSection')).toBeInTheDocument();
     // Filters appears both on mobile and desktop, so use queryAllByText
