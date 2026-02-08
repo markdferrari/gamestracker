@@ -50,7 +50,7 @@ export function CarouselCard({
     <Link
       href={href}
       {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : undefined)}
-      className="group block"
+      className="group block min-w-0 flex-shrink w-full max-w-full"
     >
       <div className="flex min-w-[220px] items-stretch gap-3 rounded-lg border border-zinc-200/70 bg-white/80 p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-800/70 dark:bg-zinc-900/80">
         <div className="relative h-32 w-24 flex-shrink-0 overflow-hidden rounded bg-zinc-100 dark:bg-zinc-800">

@@ -29,4 +29,16 @@ describe("ScreenshotGallery", () => {
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
+
+  it("renders a constrained mobile scroll track", () => {
+    render(<ScreenshotGallery screenshots={screenshots} title="Test Game" />);
+
+    const wrapper = screen.getByTestId("screenshot-gallery-mobile-wrapper");
+    expect(wrapper).toHaveClass("max-w-full");
+    expect(wrapper).toHaveClass("overflow-hidden");
+
+    const track = screen.getByTestId("screenshot-gallery-mobile-track");
+    expect(track).toHaveClass("overflow-x-auto");
+    expect(track).toHaveClass("px-4");
+  });
 });

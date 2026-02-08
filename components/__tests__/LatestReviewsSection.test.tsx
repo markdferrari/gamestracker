@@ -83,6 +83,13 @@ describe('LatestReviewsSection', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('adds a shrinkable carousel wrapper to prevent overflow', () => {
+    render(<LatestReviewsSection />);
+
+    const wrapper = screen.getByTestId('latest-reviews-carousel-wrapper');
+    expect(wrapper).toHaveClass('max-w-full', 'min-w-0');
+  });
+
   it('should fetch and render reviews after intersection', async () => {
     fetchMock.mockResolvedValue(
       new Response(JSON.stringify({ reviews: mockReviews }), { status: 200 })

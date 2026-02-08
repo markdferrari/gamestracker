@@ -58,6 +58,9 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
       )}`
     : null;
 
+  const coverWrapperClasses =
+    'mx-auto w-full max-w-[min(90vw,360px)] min-w-0 overflow-hidden rounded-xl sm:max-w-none';
+
   // Get screenshots
   const screenshots =
     game.screenshots?.map(
@@ -105,7 +108,7 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.15),_transparent_45%)]">
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-[min(100vw,360px)] px-4 py-8 sm:px-6 sm:max-w-[min(100vw,640px)] lg:px-8 lg:max-w-6xl">
         {/* Back Button */}
         <Link
           href="/"
@@ -115,9 +118,9 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
           Back to games
         </Link>
 
-        <div className="grid gap-8 lg:grid-cols-3">
+        <div className="grid gap-8 lg:grid-cols-3 min-w-0">
           {/* Left Column - Cover & Meta */}
-          <div className="lg:col-span-1 lg:sticky lg:top-24 lg:self-start">
+          <div className="lg:col-span-1 lg:sticky lg:top-24 lg:self-start min-w-0">
             <div className="space-y-6">
               <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                 <div
@@ -134,20 +137,24 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
                 </div>
 
                 {coverUrl ? (
-                  <div className="relative aspect-[3/4] overflow-hidden rounded-xl">
-                    <Image
-                      src={coverUrl}
-                      alt={game.name}
-                      fill
-                      unoptimized
-                      className="object-cover"
-                      priority
-                      sizes="(max-width: 1024px) 80vw, 360px"
-                    />
+                  <div data-testid="game-cover-wrapper" className={coverWrapperClasses}>
+                    <div className="relative aspect-[3/4]">
+                      <Image
+                        src={coverUrl}
+                        alt={game.name}
+                        fill
+                        unoptimized
+                        className="object-cover"
+                        priority
+                        sizes="(max-width: 640px) min(90vw, 360px), 360px"
+                      />
+                    </div>
                   </div>
                 ) : (
-                  <div className="flex aspect-[3/4] items-center justify-center rounded-xl bg-zinc-100 text-sm text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-                    No cover available
+                  <div data-testid="game-cover-wrapper" className={coverWrapperClasses}>
+                    <div className="flex aspect-[3/4] h-full items-center justify-center bg-zinc-100 text-sm text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                      No cover available
+                    </div>
                   </div>
                 )}
               </div>
@@ -201,7 +208,7 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
           </div>
 
           {/* Right Column - Details */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 min-w-0">
             <div className="space-y-3">
               <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
                 {game.name}

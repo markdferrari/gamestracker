@@ -58,29 +58,39 @@ export function ScreenshotGallery({ screenshots, title }: ScreenshotGalleryProps
           </button>
         ))}
       </div>
-      <div className="mt-4 flex gap-4 overflow-x-auto pb-2 sm:hidden">
-        {screenshots.map((screenshot, index) => (
-          <button
-            key={screenshot}
-            type="button"
-            onClick={() => open(index)}
-            className="group relative h-48 min-w-[80%] flex-none overflow-hidden rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
-            aria-label={`Open screenshot ${index + 1}`}
+      <div className="mt-4 sm:hidden">
+        <div
+          data-testid="screenshot-gallery-mobile-wrapper"
+          className="max-w-full overflow-hidden rounded-2xl"
+        >
+          <div
+            data-testid="screenshot-gallery-mobile-track"
+            className="flex gap-4 overflow-x-auto px-4 pb-2"
           >
-            <Image
-              src={screenshot}
-              alt={`${title} screenshot ${index + 1}`}
-              fill
-              unoptimized
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
-              sizes="80vw"
-            />
-            <div className="pointer-events-none absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/30" />
-            <span className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-zinc-900 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-              Tap to expand
-            </span>
-          </button>
-        ))}
+            {screenshots.map((screenshot, index) => (
+              <button
+                key={screenshot}
+                type="button"
+                onClick={() => open(index)}
+                className="group relative h-48 min-w-[min(90vw,320px)] flex-none overflow-hidden rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
+                aria-label={`Open screenshot ${index + 1}`}
+              >
+                <Image
+                  src={screenshot}
+                  alt={`${title} screenshot ${index + 1}`}
+                  fill
+                  unoptimized
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  sizes="min(90vw, 320px)"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/30" />
+                <span className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-zinc-900 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                  Tap to expand
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <ScreenshotLightbox
