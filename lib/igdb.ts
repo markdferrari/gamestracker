@@ -474,11 +474,29 @@ export async function searchGameByName(name: string): Promise<IGDBGame | null> {
 }
 
 /**
+ * Fetch similar games by ID without caching
+ */
+export async function getSimilarGamesById(id: number): Promise<IGDBGame['similar_games']> {
+  const query = `
+    fields similar_games.id, similar_games.name, similar_games.cover.url;
+    where id = ${id};
+  `;
+
+  const results = await igdbRequest<Array<{ similar_games?: IGDBGame['similar_games'] }>>(
+    'games',
+    query,
+  );
+  if (results.length === 0) return [];
+
+  return results[0].similar_games ?? [];
+}
+
+/**
  * Fetch a single game by ID
  */
 export async function getGameById(id: number): Promise<IGDBGame | null> {
   const query = `
-  fields name, summary, cover.url, first_release_date, platforms.name, screenshots.url, release_dates.human, release_dates.date, release_dates.date_format, release_dates.platform.name, release_dates.platform.id, websites.category, websites.url, external_games.category, external_games.uid, aggregated_rating, aggregated_rating_count, similar_games.id, similar_games.name, similar_games.cover.url, genres.name, involved_companies.company.id, involved_companies.company.name, involved_companies.developer, involved_companies.publisher, collection.id, collection.name;
+  fields name, summary, cover.url, first_release_date, platforms.name, screenshots.url, release_dates.human, release_dates.date, release_dates.date_format, release_dates.platform.name, release_dates.platform.id, websites.category, websites.url, external_games.category, external_games.uid, aggregated_rating, aggregated_rating_count, genres.name, involved_companies.company.id, involved_companies.company.name, involved_companies.developer, involved_companies.publisher, collection.id, collection.name;
     where id = ${id};
   `;
 

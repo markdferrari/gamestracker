@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { getGameById, formatReleaseDate } from '@/lib/igdb';
+import { getGameById, getSimilarGamesById, formatReleaseDate } from '@/lib/igdb';
 import { getGameNote } from '@/lib/notes';
 import { GameLinks } from '@/components/GameLinks';
 import { ReviewSection } from '@/components/ReviewSection';
@@ -39,9 +39,10 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
     notFound();
   }
 
-  // Fetch game data and user notes in parallel
-  const [game, note] = await Promise.all([
+  // Fetch game data, similar games, and user notes in parallel
+  const [game, similarGamesData, note] = await Promise.all([
     getGameById(gameId),
+    getSimilarGamesById(gameId),
     getGameNote(gameId),
   ]);
 
@@ -65,7 +66,7 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
         )}`,
     ) || [];
 
-  const similarGames = (game.similar_games ?? [])
+  const similarGames = (similarGamesData ?? [])
     .slice(0, 6)
     .map((similar) => ({
       id: similar.id,
