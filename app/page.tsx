@@ -1,4 +1,4 @@
-import { getUpcomingPSGames, getRecentlyReleasedGames } from '@/lib/igdb';
+import { getGameGenres, getUpcomingPSGames, getRecentlyReleasedGames } from '@/lib/igdb';
 import type { IGDBGame } from '@/lib/igdb';
 import { GameCard } from '@/components/GameCard';
 import { LatestReviewsSection } from '@/components/LatestReviewsSection';
@@ -7,7 +7,7 @@ import { TrendingSection } from '@/components/TrendingSection';
 import { Suspense } from 'react';
 
 interface PageProps {
-  searchParams: Promise<{ platform?: string; view?: string; studio?: string }>;
+  searchParams: Promise<{ platform?: string; view?: string; genre?: string; studio?: string }>;
 }
 
 export default async function Home({ searchParams }: PageProps) {
@@ -19,6 +19,8 @@ export default async function Home({ searchParams }: PageProps) {
       ? ({ type: 'family', id: 4 } as const)
       : ({ type: 'family', id: parseInt(platformParam, 10) || 1 } as const);
   const view = params.view || 'upcoming';
+  const genreParam = params.genre;
+  const genresPromise = getGameGenres();
   
   let games: IGDBGame[] = [];
   let error = null;
@@ -27,22 +29,25 @@ export default async function Home({ searchParams }: PageProps) {
   const studioFilterId = typeof parsedStudioId === 'number' && !Number.isNaN(parsedStudioId) ? parsedStudioId : undefined;
 
   try {
+    const genreId = genreParam ? parseInt(genreParam, 10) : undefined;
     if (view === 'recent') {
-      games = await getRecentlyReleasedGames(platformFilter, studioFilterId);
+      games = await getRecentlyReleasedGames(platformFilter, genreId, studioFilterId);
     } else {
-      games = await getUpcomingPSGames(platformFilter, studioFilterId);
+      games = await getUpcomingPSGames(platformFilter, genreId, studioFilterId);
     }
   } catch (e) {
     error = e instanceof Error ? e.message : 'Failed to fetch games';
     games = [];
   }
 
+  const genres = await genresPromise.catch(() => []);
+
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.15),_transparent_45%)]">
       <main className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-10 sm:px-6 lg:px-8">
         <section className="rounded-3xl border border-zinc-200/70 bg-white/90 p-8 shadow-xl shadow-slate-900/5 dark:border-zinc-800/80 dark:bg-zinc-950/75">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-sky-500">
-            Tracking all the upcoming releases so you don't have to
+            Tracking all the upcoming releases so you don&apos;t have to
           </p>
           <h1 className="mt-4 text-4xl font-bold leading-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
             Stay ahead of every big game drop and score update.
@@ -53,9 +58,6 @@ export default async function Home({ searchParams }: PageProps) {
           <div className="mt-6 flex flex-wrap gap-3">
             <button className="rounded-full bg-sky-500 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/40 transition hover:bg-sky-600">
               Browse upcoming
-            </button>
-            <button className="rounded-full border border-zinc-900/10 px-6 py-2 text-sm font-semibold text-zinc-900 transition hover:border-sky-500 hover:text-sky-500 dark:border-zinc-800/60 dark:text-zinc-100">
-              Save a reminder
             </button>
           </div>
         </section>
@@ -119,7 +121,7 @@ export default async function Home({ searchParams }: PageProps) {
               </p>
               <div className="mt-4">
                 <Suspense fallback={<div>Loading filters...</div>}>
-                  <PlatformFilter />
+                  <PlatformFilter genres={genres} />
                 </Suspense>
               </div>
             </div>

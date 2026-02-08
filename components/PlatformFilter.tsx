@@ -10,30 +10,30 @@ const PLATFORMS = [
   { id: 'pc', name: 'PC' },
 ];
 
-export function PlatformFilter() {
+interface PlatformFilterProps {
+  genres: Array<{ id: number; name: string }>;
+}
+
+export function PlatformFilter({ genres }: PlatformFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentPlatform = searchParams.get('platform') || '1';
+  const currentGenre = searchParams.get('genre') || '';
   const currentStudio = searchParams.get('studio') || '';
 
   const [studios, setStudios] = useState<Array<{ id: number; name: string }>>([]);
   const [studioLoading, setStudioLoading] = useState(true);
   const [studioError, setStudioError] = useState(false);
 
-  const handlePlatformChange = (platformId: string) => {
+  const handleSelectChange = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
-    params.set('platform', platformId);
-    router.push(`/?${params.toString()}`);
-  };
-
-  const handleStudioChange = (studioId: string) => {
-    const params = new URLSearchParams(searchParams);
-    if (studioId) {
-      params.set('studio', studioId);
+    if (value) {
+      params.set(key, value);
     } else {
-      params.delete('studio');
+      params.delete(key);
     }
-    router.push(`/?${params.toString()}`);
+    const query = params.toString();
+    router.push(query ? `/?${query}` : '/');
   };
 
   useEffect(() => {
@@ -68,31 +68,44 @@ export function PlatformFilter() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap gap-2 rounded-full border border-zinc-200/70 bg-white/80 p-2 shadow-sm dark:border-zinc-800/70 dark:bg-zinc-900/80">
-        {PLATFORMS.map((platform) => (
-          <button
-            key={platform.id}
-            onClick={() => handlePlatformChange(platform.id)}
-            className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wide transition ${
-              currentPlatform === platform.id
-                ? 'bg-sky-500 text-white shadow shadow-sky-500/40'
-                : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800'
-            }`}
-          >
-            {platform.name}
-          </button>
-        ))}
-      </div>
-      <div className="flex flex-col gap-1">
-        <label htmlFor="studio-filter" className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-          Studio
-        </label>
+    <div className="grid gap-4">
+      <label className="text-xs uppercase tracking-[0.3em] text-zinc-500">
+        Platform
         <select
-          id="studio-filter"
+          value={currentPlatform}
+          onChange={(event) => handleSelectChange('platform', event.target.value)}
+          className="mt-2 w-full rounded-2xl border border-zinc-200/70 bg-white px-3 py-2 text-sm text-zinc-800 dark:border-zinc-800/70 dark:bg-zinc-950/70 dark:text-zinc-100"
+        >
+          {PLATFORMS.map((platform) => (
+            <option key={platform.id} value={platform.id}>
+              {platform.name}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="text-xs uppercase tracking-[0.3em] text-zinc-500">
+        Genre
+        <select
+          value={currentGenre}
+          onChange={(event) => handleSelectChange('genre', event.target.value)}
+          className="mt-2 w-full rounded-2xl border border-zinc-200/70 bg-white px-3 py-2 text-sm text-zinc-800 dark:border-zinc-800/70 dark:bg-zinc-950/70 dark:text-zinc-100"
+        >
+          <option value="">All genres</option>
+          {genres.map((genre) => (
+            <option key={genre.id} value={genre.id.toString()}>
+              {genre.name}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="text-xs uppercase tracking-[0.3em] text-zinc-500">
+        Studio
+        <select
           value={currentStudio}
-          onChange={(event) => handleStudioChange(event.target.value)}
-          className="max-w-full rounded-2xl border border-zinc-200/80 bg-white/90 px-3 py-2 text-sm font-semibold text-zinc-700 uppercase tracking-wide shadow-sm transition hover:border-sky-500 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/40 dark:border-zinc-800/70 dark:bg-zinc-900/80 dark:text-zinc-200"
+          onChange={(event) => handleSelectChange('studio', event.target.value)}
+          className="mt-2 w-full rounded-2xl border border-zinc-200/70 bg-white px-3 py-2 text-sm text-zinc-800 dark:border-zinc-800/70 dark:bg-zinc-950/70 dark:text-zinc-100"
         >
           <option value="">All studios</option>
           {studios.map((studio) => (
@@ -102,12 +115,16 @@ export function PlatformFilter() {
           ))}
         </select>
         {studioLoading && (
-          <span className="text-xs uppercase tracking-[0.3em] text-zinc-500">Loading studios…</span>
+          <span className="mt-2 block text-[10px] uppercase tracking-[0.3em] text-zinc-500">
+            Loading studios…
+          </span>
         )}
         {studioError && (
-          <span className="text-xs uppercase tracking-[0.3em] text-red-500">Failed to load studios</span>
+          <span className="mt-2 block text-[10px] uppercase tracking-[0.3em] text-red-500">
+            Failed to load studios
+          </span>
         )}
-      </div>
+      </label>
     </div>
   );
 }

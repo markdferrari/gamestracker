@@ -59,6 +59,8 @@ export interface IGDBGame {
   first_release_date?: number;
   platforms?: Array<{ id: number; name: string }>;
   screenshots?: Array<{ url: string }>;
+  similar_games?: Array<{ id: number; name: string; cover?: { url: string } }>;
+  genres?: Array<{ id: number; name: string }>;
   release_dates?: Array<{
     human: string;
     date: number;
@@ -76,6 +78,17 @@ export interface IGDBGame {
   }>;
   aggregated_rating?: number;
   aggregated_rating_count?: number;
+  involved_companies?: Array<{
+    company: { id: number; name: string };
+    developer?: boolean;
+    publisher?: boolean;
+  }>;
+  collection?: { id: number; name: string };
+}
+
+export interface IGDBGenre {
+  id: number;
+  name: string;
 }
 
 export interface IGDBStudio {
@@ -86,18 +99,11 @@ export interface IGDBStudio {
 interface IGDBReleaseDate {
   id: number;
   date: number;
-    similar_games?: Array<{ id: number; name: string; cover?: { url: string } }>;
-    genres?: Array<{ id: number; name: string }>;
-    involved_companies?: Array<{
-      company: { id: number; name: string };
-      developer?: boolean;
-      publisher?: boolean;
-    }>;
-    collection?: { id: number; name: string };
+  human?: string;
   date_format?: number;
   status?: number;
   platform?: { id: number; name: string; platform_family?: number; platform_type?: number };
-  game: {
+  game?: {
     id: number;
     name: string;
     summary?: string;
@@ -186,7 +192,7 @@ async function igdbRequest<T>(endpoint: string, body: string): Promise<T> {
       'Content-Type': 'text/plain',
     },
     body,
-    next: { revalidate: 86400 }, // Cache for 24 hours
+    next: { revalidate: 172800 }, // Cache for 48 hours
   });
 
   if (!response.ok) {
@@ -201,6 +207,7 @@ async function igdbRequest<T>(endpoint: string, body: string): Promise<T> {
  */
 export async function getUpcomingPSGames(
   platform: IGDBPlatformFilter | number = { type: 'family', id: 1 },
+  genreId?: number,
   studioId?: number,
 ): Promise<IGDBGame[]> {
   const platformFilter = normalizePlatformFilter(platform);
@@ -214,17 +221,28 @@ export async function getUpcomingPSGames(
         ? `platform = (${platformFilter.id})`
         : `platform.platform_type = (${platformFilter.id})`;
 
-  const studioIdClause =
-    typeof studioId === 'number' && Number.isFinite(studioId)
-      ? ` & game.involved_companies.developer = true & game.involved_companies.company = (${studioId})`
-      : '';
+  const filters = [
+    'date != null',
+    `date > ${currentTimestamp}`,
+    `date <= ${sixMonthsAhead}`,
+    `${platformWhere}`,
+  ];
+
+  if (typeof genreId === 'number') {
+    filters.push(`game.genres = (${genreId})`);
+  }
+
+  if (typeof studioId === 'number' && Number.isFinite(studioId)) {
+    filters.push(
+      `game.involved_companies.developer = true & game.involved_companies.company = (${studioId})`,
+    );
+  }
 
   const query = `
     fields date, human, date_format, status, platform.id, platform.name, platform.platform_family, platform.platform_type,
       game.id, game.name, game.summary, game.cover.url, game.first_release_date,
       game.game_status, game.platforms.name, game.screenshots.url;
-    where date != null & date > ${currentTimestamp} & date <= ${sixMonthsAhead}
-      & ${platformWhere}${studioIdClause};
+    where ${filters.join(' & ')};
     sort date asc;
     limit 150;
   `;
@@ -318,6 +336,7 @@ export async function getUpcomingPSGames(
  */
 export async function getRecentlyReleasedGames(
   platform: IGDBPlatformFilter | number = { type: 'family', id: 1 },
+  genreId?: number,
   studioId?: number,
 ): Promise<IGDBGame[]> {
   const platformFilter = normalizePlatformFilter(platform);
@@ -331,17 +350,28 @@ export async function getRecentlyReleasedGames(
         ? `platform = (${platformFilter.id})`
         : `platform.platform_type = (${platformFilter.id})`;
 
-  const studioIdClause =
-    typeof studioId === 'number' && Number.isFinite(studioId)
-      ? ` & game.involved_companies.developer = true & game.involved_companies.company = (${studioId})`
-      : '';
+  const filters = [
+    'date != null',
+    `date >= ${sixtyDaysAgo}`,
+    `date <= ${currentTimestamp}`,
+    `${platformWhere}`,
+  ];
+
+  if (typeof genreId === 'number') {
+    filters.push(`game.genres = (${genreId})`);
+  }
+
+  if (typeof studioId === 'number' && Number.isFinite(studioId)) {
+    filters.push(
+      `game.involved_companies.developer = true & game.involved_companies.company = (${studioId})`,
+    );
+  }
 
   const query = `
     fields date, human, date_format, status, platform.id, platform.name, platform.platform_family, platform.platform_type,
       game.id, game.name, game.summary, game.cover.url, game.first_release_date,
       game.game_status, game.platforms.name, game.screenshots.url;
-    where date != null & date >= ${sixtyDaysAgo} & date <= ${currentTimestamp}
-      & ${platformWhere}${studioIdClause};
+    where ${filters.join(' & ')};
     sort date desc;
     limit 100;
   `;
@@ -448,7 +478,7 @@ export async function searchGameByName(name: string): Promise<IGDBGame | null> {
  */
 export async function getGameById(id: number): Promise<IGDBGame | null> {
   const query = `
-    fields name, summary, cover.url, first_release_date, platforms.name, screenshots.url, release_dates.human, release_dates.date, release_dates.date_format, release_dates.platform.name, release_dates.platform.id, websites.category, websites.url, external_games.category, external_games.uid, aggregated_rating, aggregated_rating_count, similar_games.id, similar_games.name, similar_games.cover.url, genres.name, involved_companies.company.name, involved_companies.developer, involved_companies.publisher, collection.name;
+  fields name, summary, cover.url, first_release_date, platforms.name, screenshots.url, release_dates.human, release_dates.date, release_dates.date_format, release_dates.platform.name, release_dates.platform.id, websites.category, websites.url, external_games.category, external_games.uid, aggregated_rating, aggregated_rating_count, similar_games.id, similar_games.name, similar_games.cover.url, genres.name, involved_companies.company.id, involved_companies.company.name, involved_companies.developer, involved_companies.publisher, collection.id, collection.name;
     where id = ${id};
   `;
 
@@ -486,6 +516,15 @@ export function formatReleaseDate(timestamp: number): string {
     day: 'numeric',
     timeZone: 'UTC',
   });
+}
+export async function getGameGenres(): Promise<IGDBGenre[]> {
+  const query = `
+    fields id, name;
+    sort name asc;
+    limit 300;
+  `;
+
+  return igdbRequest<IGDBGenre[]>('genres', query);
 }
 
 export async function getDeveloperStudios(): Promise<IGDBStudio[]> {

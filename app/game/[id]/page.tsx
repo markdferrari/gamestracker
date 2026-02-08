@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Calendar, Gamepad2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { getGameById, formatReleaseDate } from '@/lib/igdb';
 import { getGameNote } from '@/lib/notes';
 import { GameLinks } from '@/components/GameLinks';
@@ -57,26 +57,13 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
     : null;
 
   // Get screenshots
-  const screenshots = game.screenshots?.map(s => 
-    `/api/image?url=${encodeURIComponent(
-      `https:${s.url.replace('t_thumb', 't_screenshot_big')}`,
-    )}`
-  ) || [];
-
-  // Get release date
-  const releaseDate = game.release_dates?.[0]?.date || game.first_release_date;
-  const releaseDateHuman = game.release_dates?.[0]?.human || 
-    (releaseDate ? formatReleaseDate(releaseDate) : 'TBA');
-  const releaseDateBadge = releaseDate
-    ? formatReleaseBadge(releaseDate)
-    : 'TBA';
-
-  // Get platforms
-  const platforms = game.release_dates
-    ?.map(rd => rd.platform?.name)
-    .filter((name, index, self) => name && self.indexOf(name) === index)
-    || game.platforms?.map(p => p.name) 
-    || [];
+  const screenshots =
+    game.screenshots?.map(
+      (s) =>
+        `/api/image?url=${encodeURIComponent(
+          `https:${s.url.replace('t_thumb', 't_screenshot_big')}`,
+        )}`,
+    ) || [];
 
   const similarGames = (game.similar_games ?? [])
     .slice(0, 6)
@@ -89,6 +76,24 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
           )}`
         : null,
     }));
+
+  // Get release date
+  const releaseDate = game.release_dates?.[0]?.date || game.first_release_date;
+  const releaseDateHuman = game.release_dates?.[0]?.human || 
+    (releaseDate ? formatReleaseDate(releaseDate) : 'TBA');
+  const releaseDateBadge = releaseDate
+    ? formatReleaseBadge(releaseDate)
+    : 'TBA';
+
+  // Get platforms
+  const platforms =
+    game.release_dates
+      ?.map((rd) => rd.platform?.name)
+      .filter((name): name is string => Boolean(name))
+      .filter((name, index, self) => self.indexOf(name) === index) ||
+    game.platforms?.map((p) => p.name) ||
+    [];
+
   const involvedCompanies = (game.involved_companies ?? []).map((entry) => ({
     id: entry.company.id,
     name: entry.company.name,
@@ -144,6 +149,7 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
                   </div>
                 )}
               </div>
+
               {(involvedCompanies.length > 0 || collectionName) && (
                 <div className="space-y-4 rounded-2xl border border-zinc-200/70 bg-white/90 p-4 dark:border-zinc-800/80 dark:bg-zinc-950/70">
                   {collectionName && (
@@ -194,10 +200,22 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
 
           {/* Right Column - Details */}
           <div className="lg:col-span-2">
-            <div className="space-y-4">
+            <div className="space-y-3">
               <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
                 {game.name}
               </h1>
+              {game.genres && game.genres.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {game.genres.slice(0, 2).map((genre) => (
+                    <span
+                      key={genre.id}
+                      className="rounded-full border border-sky-200/70 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-700 dark:border-sky-500/60 dark:bg-sky-900/40 dark:text-sky-200"
+                    >
+                      {genre.name}
+                    </span>
+                  ))}
+                </div>
+              )}
               {platforms.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {platforms.map((platform) => (

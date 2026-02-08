@@ -35,67 +35,71 @@ describe('PlatformFilter', () => {
     (global as unknown as { fetch?: jest.Mock }).fetch = originalFetch;
   });
 
-  it('renders all platform buttons', () => {
-    render(<PlatformFilter />);
+  const renderFilter = async () => {
+    render(<PlatformFilter genres={[]} />);
+    await screen.findByLabelText('Studio');
+  };
 
-    expect(screen.getByText('PlayStation')).toBeInTheDocument();
-    expect(screen.getByText('Xbox')).toBeInTheDocument();
-    expect(screen.getByText('Nintendo')).toBeInTheDocument();
-    expect(screen.getByText('PC')).toBeInTheDocument();
+  it('renders platform and genre selects with options', async () => {
+    await renderFilter();
+
+    const platformSelect = screen.getByLabelText('Platform');
+    expect(platformSelect).toBeInTheDocument();
+    expect(platformSelect).toHaveValue('1');
+    expect(screen.getByRole('option', { name: 'PlayStation' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Xbox' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Nintendo' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'PC' })).toBeInTheDocument();
+
+    const genreSelect = screen.getByLabelText('Genre');
+    expect(genreSelect).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'All genres' })).toBeInTheDocument();
   });
 
-  it('highlights the default platform', () => {
-    render(<PlatformFilter />);
-
-    expect(screen.getByText('PlayStation')).toHaveClass('bg-sky-500');
-  });
-
-  it('highlights platform from existing search params', () => {
+  it('reads the platform value from search params', async () => {
     mockSearchParams = new URLSearchParams('platform=pc');
     (useSearchParams as jest.Mock).mockReturnValue(mockSearchParams);
+    await renderFilter();
 
-    render(<PlatformFilter />);
-
-    expect(screen.getByText('PC')).toHaveClass('bg-sky-500');
+    expect(screen.getByLabelText('Platform')).toHaveValue('pc');
   });
 
-  it('navigates when a platform button is clicked', async () => {
+  it('navigates when the platform select changes', async () => {
     const user = userEvent.setup();
-    render(<PlatformFilter />);
+    await renderFilter();
 
-    const pcButton = screen.getByText('PC');
-    await user.click(pcButton);
+    const platformSelect = screen.getByLabelText('Platform');
+    await user.selectOptions(platformSelect, 'pc');
 
     expect(mockPush).toHaveBeenCalledWith('/?platform=pc');
   });
 
-  it('preserves other search params when changing platform', async () => {
+  it('preserves other query params when the platform changes', async () => {
     mockSearchParams = new URLSearchParams('platform=1&sort=date');
     (useSearchParams as jest.Mock).mockReturnValue(mockSearchParams);
-
     const user = userEvent.setup();
-    render(<PlatformFilter />);
+    await renderFilter();
 
-    const xboxButton = screen.getByText('Xbox');
-    await user.click(xboxButton);
+    const platformSelect = screen.getByLabelText('Platform');
+    await user.selectOptions(platformSelect, '2');
 
     expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('platform=2'));
     expect(mockPush).toHaveBeenCalledWith(expect.stringContaining('sort=date'));
   });
 
   it('loads studios and renders the dropdown', async () => {
-    render(<PlatformFilter />);
+    await renderFilter();
 
-    const studioSelect = await screen.findByLabelText('Studio');
+    const studioSelect = screen.getByLabelText('Studio');
     expect(studioSelect).toBeInTheDocument();
     expect(await screen.findByText('Studio Alpha')).toBeInTheDocument();
   });
 
   it('updates search params when selecting a studio', async () => {
     const user = userEvent.setup();
-    render(<PlatformFilter />);
+    await renderFilter();
 
-    const studioSelect = await screen.findByLabelText('Studio');
+    const studioSelect = screen.getByLabelText('Studio');
     await user.selectOptions(studioSelect, '202');
 
     expect(mockPush).toHaveBeenCalledWith('/?studio=202');
