@@ -94,5 +94,11 @@ describe("GameDetailPage", () => {
     const badge = screen.getByTestId("release-date-hero");
     expect(badge).toHaveTextContent("Feb 15, 2026");
     expect(badge).toHaveTextContent("days away");
+
+    const coverWrapper = screen.getByTestId("game-cover-wrapper");
+    expect(coverWrapper).toBeInTheDocument();
+    expect(coverWrapper.className).toContain("max-w-[min(90vw,360px)]");
+    expect(coverWrapper.className).toContain("overflow-hidden");
+    expect(coverWrapper.className).toContain("min-w-0");
   });
 });

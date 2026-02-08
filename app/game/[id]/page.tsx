@@ -58,6 +58,9 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
       )}`
     : null;
 
+  const coverWrapperClasses =
+    'mx-auto w-full max-w-[min(90vw,360px)] min-w-0 overflow-hidden rounded-xl sm:max-w-none';
+
   // Get screenshots
   const screenshots =
     game.screenshots?.map(
@@ -134,8 +137,8 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
                 </div>
 
                 {coverUrl ? (
-                  <div className="mx-auto w-full max-w-[min(100vw,360px)] sm:max-w-none">
-                    <div className="relative aspect-[3/4] overflow-hidden rounded-xl">
+                  <div data-testid="game-cover-wrapper" className={coverWrapperClasses}>
+                    <div className="relative aspect-[3/4]">
                       <Image
                         src={coverUrl}
                         alt={game.name}
@@ -148,8 +151,8 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
                     </div>
                   </div>
                 ) : (
-                  <div className="mx-auto w-full max-w-[min(100vw,360px)] sm:max-w-none">
-                    <div className="flex aspect-[3/4] items-center justify-center rounded-xl bg-zinc-100 text-sm text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                  <div data-testid="game-cover-wrapper" className={coverWrapperClasses}>
+                    <div className="flex aspect-[3/4] h-full items-center justify-center bg-zinc-100 text-sm text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
                       No cover available
                     </div>
                   </div>
