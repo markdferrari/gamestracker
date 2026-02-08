@@ -76,6 +76,10 @@ export default async function Home({ searchParams }: PageProps) {
                 <LatestReviewsSection />
               </div>
             </Suspense>
+
+            <div className="rounded-2xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70">
+              <TrendingSection />
+            </div>
           </aside>
 
           <section className="space-y-6">
@@ -84,12 +88,6 @@ export default async function Home({ searchParams }: PageProps) {
                 {error}
               </div>
             )}
-
-            <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70">
-              <div className="mt-5">
-                <TrendingSection />
-              </div>
-            </div>
 
             <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70">
               <div className="flex flex-wrap items-center justify-between gap-3">
