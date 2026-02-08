@@ -1,7 +1,7 @@
 'use client';
 
 import type { OpenCriticReview } from '@/lib/opencritic';
-import { ReviewCarousel } from './ReviewCarousel';
+import { EmblaCarouselReviews } from './EmblaCarouselReviews';
 import { Trophy } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -85,7 +85,7 @@ export function LatestReviewsSection() {
             </div>
           </div>
         ) : reviews.length > 0 ? (
-          <ReviewCarousel reviews={reviews} />
+          <EmblaCarouselReviews reviews={reviews} />
         ) : (
           <div className="flex h-full items-center justify-center rounded-lg border border-zinc-200/70 bg-white/80 p-6 text-center dark:border-zinc-800/70 dark:bg-zinc-900/80">
             <div>

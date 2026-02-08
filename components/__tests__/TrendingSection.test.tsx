@@ -2,6 +2,16 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { TrendingSection } from '../TrendingSection';
 import type { TrendingGame } from '@/lib/opencritic';
 
+jest.mock('../EmblaCarouselTrending', () => ({
+  EmblaCarouselTrending: ({ games }: { games: TrendingGame[] }) => (
+    <div data-testid="embla-carousel-trending">
+      {games.map((game) => (
+        <div key={game.id}>{game.name}</div>
+      ))}
+    </div>
+  ),
+}));
+
 const mockGames: TrendingGame[] = [
   {
     id: 1,
@@ -42,7 +52,7 @@ describe('TrendingSection', () => {
       new Response(JSON.stringify({ games: mockGames }), { status: 200 })
     );
 
-    const { container } = render(<TrendingSection />);
+    render(<TrendingSection />);
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith('/api/opencritic/recently-released', {
@@ -50,8 +60,7 @@ describe('TrendingSection', () => {
       });
       expect(screen.getAllByText('Game One').length).toBeGreaterThan(0);
       expect(screen.getAllByText('Game Two').length).toBeGreaterThan(0);
-      const carousel = container.querySelector('.hide-scrollbar');
-      expect(carousel).toBeInTheDocument();
+      expect(screen.getByTestId('embla-carousel-trending')).toBeInTheDocument();
     });
   });
 

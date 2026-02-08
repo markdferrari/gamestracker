@@ -1,6 +1,17 @@
 import '@testing-library/jest-dom';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { LatestReviewsSection } from '../LatestReviewsSection';
+import type { OpenCriticReview } from '@/lib/opencritic';
+
+jest.mock('../EmblaCarouselReviews', () => ({
+  EmblaCarouselReviews: ({ reviews }: { reviews: OpenCriticReview[] }) => (
+    <div data-testid="embla-carousel-reviews">
+      {reviews.map((review) => (
+        <div key={review.id}>{review.name}</div>
+      ))}
+    </div>
+  ),
+}));
 
 describe('LatestReviewsSection', () => {
   const mockReviews = [
@@ -77,7 +88,7 @@ describe('LatestReviewsSection', () => {
       new Response(JSON.stringify({ reviews: mockReviews }), { status: 200 })
     );
 
-    const { container } = render(<LatestReviewsSection />);
+    render(<LatestReviewsSection />);
 
     await act(async () => {
       intersectionObserver?.triggerIntersect(true);
@@ -89,8 +100,7 @@ describe('LatestReviewsSection', () => {
       });
       expect(screen.getAllByText('Game One').length).toBeGreaterThan(0);
       expect(screen.getAllByText('Game Two').length).toBeGreaterThan(0);
-      const carousel = container.querySelector('.hide-scrollbar');
-      expect(carousel).toBeInTheDocument();
+      expect(screen.getByTestId('embla-carousel-reviews')).toBeInTheDocument();
     });
   });
 

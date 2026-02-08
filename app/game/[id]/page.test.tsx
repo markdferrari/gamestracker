@@ -29,6 +29,10 @@ jest.mock("@/components/ScreenshotGallery", () => ({
   ScreenshotGallery: ({ title }: { title: string }) => <div>Gallery {title}</div>,
 }));
 
+jest.mock("@/components/SimilarGamesCarousel", () => ({
+  SimilarGamesCarousel: () => <div>Similar Games Carousel</div>,
+}));
+
 jest.mock("@/lib/igdb", () => ({
   getGameById: jest.fn(),
   getSimilarGamesById: jest.fn(),
