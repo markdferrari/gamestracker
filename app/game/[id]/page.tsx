@@ -134,20 +134,24 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
                 </div>
 
                 {coverUrl ? (
-                  <div className="relative aspect-[3/4] overflow-hidden rounded-xl">
-                    <Image
-                      src={coverUrl}
-                      alt={game.name}
-                      fill
-                      unoptimized
-                      className="object-cover"
-                      priority
-                      sizes="(max-width: 1024px) 80vw, 360px"
-                    />
+                  <div className="mx-auto w-full max-w-[min(100vw,360px)] sm:max-w-none">
+                    <div className="relative aspect-[3/4] overflow-hidden rounded-xl">
+                      <Image
+                        src={coverUrl}
+                        alt={game.name}
+                        fill
+                        unoptimized
+                        className="object-cover"
+                        priority
+                        sizes="(max-width: 640px) min(90vw, 360px), 360px"
+                      />
+                    </div>
                   </div>
                 ) : (
-                  <div className="flex aspect-[3/4] items-center justify-center rounded-xl bg-zinc-100 text-sm text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-                    No cover available
+                  <div className="mx-auto w-full max-w-[min(100vw,360px)] sm:max-w-none">
+                    <div className="flex aspect-[3/4] items-center justify-center rounded-xl bg-zinc-100 text-sm text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                      No cover available
+                    </div>
                   </div>
                 )}
               </div>

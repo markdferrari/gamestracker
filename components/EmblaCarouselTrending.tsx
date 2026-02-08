@@ -42,7 +42,7 @@ export function EmblaCarouselTrending({ games }: EmblaCarouselTrendingProps) {
   return (
     <div className="w-full">
       <div className="relative">
-        <div className="overflow-hidden" ref={emblaRef}>
+        <div className="max-w-full overflow-hidden px-4" ref={emblaRef}>
           <div className="flex gap-3">
             {games.map((game) => {
               const slug = game.name.toLowerCase().replace(/\s+/g, '-');
@@ -59,7 +59,10 @@ export function EmblaCarouselTrending({ games }: EmblaCarouselTrendingProps) {
               const roundedScore = game.topCriticScore ? Math.round(game.topCriticScore) : undefined;
 
               return (
-                <div key={`${game.id}-carousel`} className="min-w-0 flex-[0_0_calc(100%-0.75rem)] sm:flex-[0_0_calc(50%-0.75rem)] lg:flex-[0_0_calc(100%-0.75rem)]">
+                <div
+                  key={`${game.id}-carousel`}
+                  className="min-w-0 flex-[0_0_min(90vw,320px)] sm:flex-[0_0_calc(50%-0.75rem)] lg:flex-[0_0_calc(100%-0.75rem)] w-full max-w-full"
+                >
                   <CarouselCard
                     href={href}
                     isExternal={isExternal}

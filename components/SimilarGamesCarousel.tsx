@@ -42,15 +42,15 @@ export function SimilarGamesCarousel({ games }: SimilarGamesCarouselProps) {
   }, [emblaApi]);
 
   return (
-    <div className="w-full">
+    <div className="w-full max-w-full">
       <div className="relative">
-        <div className="overflow-hidden" ref={emblaRef}>
+        <div className="max-w-full overflow-hidden px-4" ref={emblaRef}>
           <div className="flex gap-4">
             {games.map((similar) => (
               <Link
                 key={similar.id}
                 href={`/game/${similar.id}`}
-                className="group min-w-0 flex-[0_0_calc(50%-0.5rem)] overflow-hidden rounded-2xl border border-zinc-200 bg-white text-zinc-900 transition hover:border-blue-400 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 sm:flex-[0_0_calc(33.333%-0.67rem)] lg:flex-[0_0_calc(33.333%-0.67rem)]"
+                className="group mx-auto w-full max-w-full min-w-0 flex-[0_0_min(90vw,320px)] overflow-hidden rounded-2xl border border-zinc-200 bg-white text-zinc-900 transition hover:border-blue-400 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 sm:flex-[0_0_calc(33.333%-0.67rem)] sm:max-w-[220px] lg:flex-[0_0_calc(33.333%-0.67rem)]"
               >
                 <div className="relative aspect-[3/4]">
                   {similar.coverUrl ? (
