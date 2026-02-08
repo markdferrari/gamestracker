@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/markdferrari/gamestracker/compare/v1.6.1...v1.7.0) (2026-02-08)
+
+
+### Features
+
+* correct responsive sizing ([#21](https://github.com/markdferrari/gamestracker/issues/21)) ([e654211](https://github.com/markdferrari/gamestracker/commit/e654211a88f6a0c8e790bc379fd0d9859ea1ed69))
+
 ## [1.6.1](https://github.com/markdferrari/gamestracker/compare/v1.6.0...v1.6.1) (2026-02-08)
 
 
