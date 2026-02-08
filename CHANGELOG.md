@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/markdferrari/gamestracker/compare/v1.5.0...v1.6.0) (2026-02-08)
+
+
+### Features
+
+* better layout ([#19](https://github.com/markdferrari/gamestracker/issues/19)) ([3ce1353](https://github.com/markdferrari/gamestracker/commit/3ce13539fd8a2002e59ac9fa709990b8d25de9a1))
+
 # [1.5.0](https://github.com/markdferrari/gamestracker/compare/v1.4.0...v1.5.0) (2026-02-08)
 
 
