@@ -29,18 +29,17 @@ jest.mock('@/components/TrendingSection', () => ({
 }));
 
 describe('Home page', () => {
-  it('renders a stacked mobile carousel container', async () => {
+  it('renders the hero and key sections', async () => {
     const ui = await Home({
       searchParams: Promise.resolve({ platform: '1', view: 'upcoming' }),
     });
 
     render(ui);
 
-    const mobileCarousels = screen.getByTestId('mobile-carousels');
-    expect(mobileCarousels).toBeInTheDocument();
-
-    const mobile = within(mobileCarousels);
-    expect(mobile.getByText('LatestReviewsSection')).toBeInTheDocument();
-    expect(mobile.getByText('TrendingSection')).toBeInTheDocument();
+    expect(screen.getByText('Stay ahead of every big game drop and score update.')).toBeInTheDocument();
+    expect(screen.getByText('LatestReviewsSection')).toBeInTheDocument();
+    expect(screen.getByText('TrendingSection')).toBeInTheDocument();
+    // Filters appears both on mobile and desktop, so use queryAllByText
+    expect(screen.queryAllByText('Filters').length).toBeGreaterThan(0);
   });
 });

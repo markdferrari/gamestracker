@@ -78,9 +78,20 @@ export interface IGDBGame {
   }>;
   aggregated_rating?: number;
   aggregated_rating_count?: number;
+  involved_companies?: Array<{
+    company: { id: number; name: string };
+    developer?: boolean;
+    publisher?: boolean;
+  }>;
+  collection?: { id: number; name: string };
 }
 
 export interface IGDBGenre {
+  id: number;
+  name: string;
+}
+
+export interface IGDBStudio {
   id: number;
   name: string;
 }
@@ -92,7 +103,7 @@ interface IGDBReleaseDate {
   date_format?: number;
   status?: number;
   platform?: { id: number; name: string; platform_family?: number; platform_type?: number };
-  game: {
+  game?: {
     id: number;
     name: string;
     summary?: string;
@@ -197,6 +208,7 @@ async function igdbRequest<T>(endpoint: string, body: string): Promise<T> {
 export async function getUpcomingPSGames(
   platform: IGDBPlatformFilter | number = { type: 'family', id: 1 },
   genreId?: number,
+  studioId?: number,
 ): Promise<IGDBGame[]> {
   const platformFilter = normalizePlatformFilter(platform);
   const currentTimestamp = Math.floor(Date.now() / 1000);
@@ -218,6 +230,12 @@ export async function getUpcomingPSGames(
 
   if (typeof genreId === 'number') {
     filters.push(`game.genres = (${genreId})`);
+  }
+
+  if (typeof studioId === 'number' && Number.isFinite(studioId)) {
+    filters.push(
+      `game.involved_companies.developer = true & game.involved_companies.company = (${studioId})`,
+    );
   }
 
   const query = `
@@ -319,6 +337,7 @@ export async function getUpcomingPSGames(
 export async function getRecentlyReleasedGames(
   platform: IGDBPlatformFilter | number = { type: 'family', id: 1 },
   genreId?: number,
+  studioId?: number,
 ): Promise<IGDBGame[]> {
   const platformFilter = normalizePlatformFilter(platform);
   const currentTimestamp = Math.floor(Date.now() / 1000);
@@ -340,6 +359,12 @@ export async function getRecentlyReleasedGames(
 
   if (typeof genreId === 'number') {
     filters.push(`game.genres = (${genreId})`);
+  }
+
+  if (typeof studioId === 'number' && Number.isFinite(studioId)) {
+    filters.push(
+      `game.involved_companies.developer = true & game.involved_companies.company = (${studioId})`,
+    );
   }
 
   const query = `
@@ -453,7 +478,7 @@ export async function searchGameByName(name: string): Promise<IGDBGame | null> {
  */
 export async function getGameById(id: number): Promise<IGDBGame | null> {
   const query = `
-    fields name, summary, cover.url, first_release_date, platforms.name, screenshots.url, release_dates.human, release_dates.date, release_dates.date_format, release_dates.platform.name, release_dates.platform.id, websites.category, websites.url, external_games.category, external_games.uid, aggregated_rating, aggregated_rating_count, similar_games.id, similar_games.name, similar_games.cover.url, genres.name;
+  fields name, summary, cover.url, first_release_date, platforms.name, screenshots.url, release_dates.human, release_dates.date, release_dates.date_format, release_dates.platform.name, release_dates.platform.id, websites.category, websites.url, external_games.category, external_games.uid, aggregated_rating, aggregated_rating_count, similar_games.id, similar_games.name, similar_games.cover.url, genres.name, involved_companies.company.id, involved_companies.company.name, involved_companies.developer, involved_companies.publisher, collection.id, collection.name;
     where id = ${id};
   `;
 
@@ -492,7 +517,6 @@ export function formatReleaseDate(timestamp: number): string {
     timeZone: 'UTC',
   });
 }
-
 export async function getGameGenres(): Promise<IGDBGenre[]> {
   const query = `
     fields id, name;
@@ -501,4 +525,28 @@ export async function getGameGenres(): Promise<IGDBGenre[]> {
   `;
 
   return igdbRequest<IGDBGenre[]>('genres', query);
+}
+
+export async function getDeveloperStudios(): Promise<IGDBStudio[]> {
+  const query = `
+    fields company.id, company.name;
+    where developer = true & company != null;
+    sort company.name asc;
+    limit 500;
+  `;
+
+  const results = await igdbRequest<Array<{ company?: { id: number; name: string } }>>(
+    'involved_companies',
+    query,
+  );
+
+  const seenStudios = new Map<number, string>();
+  for (const entry of results) {
+    if (!entry.company?.id || !entry.company?.name) continue;
+    seenStudios.set(entry.company.id, entry.company.name);
+  }
+
+  return Array.from(seenStudios.entries())
+    .map(([id, name]) => ({ id, name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }

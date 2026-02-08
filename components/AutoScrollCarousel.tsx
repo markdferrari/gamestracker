@@ -39,6 +39,26 @@ export function AutoScrollCarousel<T>({
     return () => clearInterval(intervalId);
   }, [items.length, isPaused]);
 
+  useEffect(() => {
+    const scrollContainer = scrollRef.current;
+    if (!scrollContainer) return;
+
+    const pause = () => setIsPaused(true);
+    const resume = () => setIsPaused(false);
+
+    scrollContainer.addEventListener('pointerdown', pause);
+    scrollContainer.addEventListener('pointerleave', resume);
+    scrollContainer.addEventListener('pointerup', resume);
+    scrollContainer.addEventListener('pointercancel', resume);
+
+    return () => {
+      scrollContainer.removeEventListener('pointerdown', pause);
+      scrollContainer.removeEventListener('pointerleave', resume);
+      scrollContainer.removeEventListener('pointerup', resume);
+      scrollContainer.removeEventListener('pointercancel', resume);
+    };
+  }, []);
+
   if (items.length === 0) {
     return <div />;
   }
@@ -47,13 +67,13 @@ export function AutoScrollCarousel<T>({
 
   return (
     <div
-      className="relative w-full overflow-hidden"
+      className="relative w-full max-w-full overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
       <div
         ref={scrollRef}
-        className="hide-scrollbar w-full overflow-x-scroll"
+        className="hide-scrollbar w-full max-w-full overflow-x-auto touch-pan-y overscroll-x-contain"
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',

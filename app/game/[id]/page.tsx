@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Calendar, Gamepad2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { getGameById, formatReleaseDate } from '@/lib/igdb';
 import { getGameNote } from '@/lib/notes';
 import { GameLinks } from '@/components/GameLinks';
@@ -57,11 +57,13 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
     : null;
 
   // Get screenshots
-  const screenshots = game.screenshots?.map(s => 
-    `/api/image?url=${encodeURIComponent(
-      `https:${s.url.replace('t_thumb', 't_screenshot_big')}`,
-    )}`
-  ) || [];
+  const screenshots =
+    game.screenshots?.map(
+      (s) =>
+        `/api/image?url=${encodeURIComponent(
+          `https:${s.url.replace('t_thumb', 't_screenshot_big')}`,
+        )}`,
+    ) || [];
 
   const similarGames = (game.similar_games ?? [])
     .slice(0, 6)
@@ -84,11 +86,20 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
     : 'TBA';
 
   // Get platforms
-  const platforms = game.release_dates
-    ?.map(rd => rd.platform?.name)
-    .filter((name, index, self) => name && self.indexOf(name) === index)
-    || game.platforms?.map(p => p.name) 
-    || [];
+  const platforms =
+    game.release_dates
+      ?.map((rd) => rd.platform?.name)
+      .filter((name): name is string => Boolean(name))
+      .filter((name, index, self) => self.indexOf(name) === index) ||
+    game.platforms?.map((p) => p.name) ||
+    [];
+
+  const involvedCompanies = (game.involved_companies ?? []).map((entry) => ({
+    id: entry.company.id,
+    name: entry.company.name,
+    role: entry.developer ? 'Developer' : entry.publisher ? 'Publisher' : undefined,
+  }));
+  const collectionName = game.collection?.name;
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.15),_transparent_45%)]">
@@ -139,6 +150,37 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
                 )}
               </div>
 
+              {(involvedCompanies.length > 0 || collectionName) && (
+                <div className="space-y-4 rounded-2xl border border-zinc-200/70 bg-white/90 p-4 dark:border-zinc-800/80 dark:bg-zinc-950/70">
+                  {collectionName && (
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
+                        Collection
+                      </p>
+                      <p className="mt-1 text-sm text-zinc-900 dark:text-zinc-100">
+                        {collectionName}
+                      </p>
+                    </div>
+                  )}
+                  {involvedCompanies.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {involvedCompanies.map((company) => (
+                        <span
+                          key={company.id}
+                          className="rounded-full border border-zinc-200/80 bg-zinc-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-zinc-700 dark:border-zinc-800/60 dark:bg-zinc-900/60 dark:text-zinc-200"
+                        >
+                          {company.name}
+                          {company.role && (
+                            <span className="ml-1 text-[0.6rem] font-normal uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
+                              {company.role}
+                            </span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Reviews & Ratings */}
@@ -154,10 +196,6 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
               />
             </div>
 
-            {/* External Links */}
-            <div className="mt-6">
-              <GameLinks websites={game.websites} />
-            </div>
           </div>
 
           {/* Right Column - Details */}
@@ -190,8 +228,7 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
                   ))}
                 </div>
               )}
-
-              </div>
+            </div>
 
             {/* Summary */}
             {game.summary && (
@@ -215,43 +252,6 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
                 </h2>
                 <div className="mt-4">
                   <ScreenshotGallery screenshots={screenshots} title={game.name} />
-                </div>
-              </div>
-            )}
-
-            {similarGames.length > 0 && (
-              <div className="mt-8">
-                <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-                  You might like...
-                </h2>
-                <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {similarGames.map((similar) => (
-                    <Link
-                      key={similar.id}
-                      href={`/game/${similar.id}`}
-                      className="group rounded-2xl border border-zinc-200/70 bg-white/90 p-3 transition hover:border-sky-500 hover:shadow-lg dark:border-zinc-800/80 dark:bg-zinc-950/70"
-                    >
-                      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-900">
-                        {similar.coverUrl ? (
-                          <Image
-                            src={similar.coverUrl}
-                            alt={similar.name}
-                            fill
-                            unoptimized
-                            className="object-cover"
-                            sizes="(max-width: 1024px) 50vw, 160px"
-                          />
-                        ) : (
-                          <div className="flex h-full items-center justify-center text-[0.55rem] uppercase tracking-[0.4em] text-zinc-400">
-                            No cover
-                          </div>
-                        )}
-                      </div>
-                      <p className="mt-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                        {similar.name}
-                      </p>
-                    </Link>
-                  ))}
                 </div>
               </div>
             )}
@@ -283,6 +283,47 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
                 </div>
               </div>
             )}
+
+            <div className="mt-8 space-y-6">
+              <GameLinks websites={game.websites} />
+
+              {similarGames.length > 0 && (
+                <div className="space-y-4">
+                  <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+                    Similar games
+                  </h2>
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {similarGames.map((similar) => (
+                      <Link
+                        key={similar.id}
+                        href={`/game/${similar.id}`}
+                        className="group mx-auto w-full max-w-[220px] overflow-hidden rounded-2xl border border-zinc-200 bg-white text-zinc-900 transition hover:border-blue-400 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100"
+                      >
+                        <div className="relative aspect-[3/4]">
+                          {similar.coverUrl ? (
+                            <Image
+                              src={similar.coverUrl}
+                              alt={similar.name}
+                              fill
+                              sizes="(max-width: 768px) 90vw, 180px"
+                              className="object-cover"
+                              unoptimized
+                            />
+                          ) : (
+                            <div className="flex h-full items-center justify-center bg-zinc-100 text-sm font-semibold uppercase tracking-wide text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
+                              No cover
+                            </div>
+                          )}
+                        </div>
+                        <div className="px-3 py-3 text-sm font-semibold">
+                          {similar.name}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </main>

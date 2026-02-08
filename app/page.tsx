@@ -7,12 +7,13 @@ import { TrendingSection } from '@/components/TrendingSection';
 import { Suspense } from 'react';
 
 interface PageProps {
-  searchParams: Promise<{ platform?: string; view?: string; genre?: string }>;
+  searchParams: Promise<{ platform?: string; view?: string; genre?: string; studio?: string }>;
 }
 
 export default async function Home({ searchParams }: PageProps) {
   const params = await searchParams;
   const platformParam = params.platform || '1';
+  const studioParam = params.studio;
   const platformFilter =
     platformParam === 'pc'
       ? ({ type: 'family', id: 4 } as const)
@@ -24,12 +25,15 @@ export default async function Home({ searchParams }: PageProps) {
   let games: IGDBGame[] = [];
   let error = null;
 
+  const parsedStudioId = studioParam ? parseInt(studioParam, 10) : undefined;
+  const studioFilterId = typeof parsedStudioId === 'number' && !Number.isNaN(parsedStudioId) ? parsedStudioId : undefined;
+
   try {
     const genreId = genreParam ? parseInt(genreParam, 10) : undefined;
     if (view === 'recent') {
-      games = await getRecentlyReleasedGames(platformFilter, genreId);
+      games = await getRecentlyReleasedGames(platformFilter, genreId, studioFilterId);
     } else {
-      games = await getUpcomingPSGames(platformFilter, genreId);
+      games = await getUpcomingPSGames(platformFilter, genreId, studioFilterId);
     }
   } catch (e) {
     error = e instanceof Error ? e.message : 'Failed to fetch games';
@@ -43,7 +47,7 @@ export default async function Home({ searchParams }: PageProps) {
       <main className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-10 sm:px-6 lg:px-8">
         <section className="rounded-3xl border border-zinc-200/70 bg-white/90 p-8 shadow-xl shadow-slate-900/5 dark:border-zinc-800/80 dark:bg-zinc-950/75">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-sky-500">
-            Tracking all the upcoming releases so you don't have to
+            Tracking all the upcoming releases so you don&apos;t have to
           </p>
           <h1 className="mt-4 text-4xl font-bold leading-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
             Stay ahead of every big game drop and score update.
@@ -55,11 +59,20 @@ export default async function Home({ searchParams }: PageProps) {
             <button className="rounded-full bg-sky-500 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/40 transition hover:bg-sky-600">
               Browse upcoming
             </button>
-            <button className="rounded-full border border-zinc-900/10 px-6 py-2 text-sm font-semibold text-zinc-900 transition hover:border-sky-500 hover:text-sky-500 dark:border-zinc-800/60 dark:text-zinc-100">
-              Save a reminder
-            </button>
           </div>
         </section>
+
+        {/* Mobile filters — visible at top on small screens */}
+        <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70 lg:hidden">
+          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-zinc-500">
+            Filters
+          </p>
+          <div className="mt-4">
+            <Suspense fallback={<div>Loading filters...</div>}>
+              <PlatformFilter genres={genres} />
+            </Suspense>
+          </div>
+        </div>
 
         <div className="grid gap-8 lg:grid-cols-[260px_minmax(0,1fr)_260px]">
           <aside className="space-y-6">
@@ -75,6 +88,10 @@ export default async function Home({ searchParams }: PageProps) {
                 <LatestReviewsSection />
               </div>
             </Suspense>
+
+            <div className="rounded-2xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70">
+              <TrendingSection />
+            </div>
           </aside>
 
           <section className="space-y-6">
@@ -83,12 +100,6 @@ export default async function Home({ searchParams }: PageProps) {
                 {error}
               </div>
             )}
-
-            <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70">
-              <div className="mt-5">
-                <TrendingSection />
-              </div>
-            </div>
 
             <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70">
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -113,7 +124,7 @@ export default async function Home({ searchParams }: PageProps) {
             </div>
           </section>
 
-          <aside className="space-y-6">
+          <aside className="space-y-6 hidden lg:block">
             <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70">
               <p className="text-xs font-semibold uppercase tracking-[0.4em] text-zinc-500">
                 Filters

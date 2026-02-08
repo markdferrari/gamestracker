@@ -83,7 +83,7 @@ export function TrendingSection() {
         <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Trending</h2>
       </div>
 
-      <div className="flex-1 overflow-hidden">{content}</div>
+      <div className="flex-1 overflow-hidden max-w-96 lg:max-w-full">{content}</div>
     </aside>
   );
 }
