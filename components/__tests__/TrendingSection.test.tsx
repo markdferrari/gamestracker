@@ -74,4 +74,17 @@ describe('TrendingSection', () => {
       expect(screen.getByText('No games available')).toBeInTheDocument();
     });
   });
+
+  it('renders a wrapper that can shrink inside the layout', async () => {
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ games: [] }), { status: 200 }));
+
+    render(<TrendingSection />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('trending-carousel-wrapper')).toBeInTheDocument();
+    });
+
+    const wrapper = screen.getByTestId('trending-carousel-wrapper');
+    expect(wrapper).toHaveClass('max-w-full', 'min-w-0');
+  });
 });

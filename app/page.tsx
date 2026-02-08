@@ -59,7 +59,7 @@ export default async function Home({ searchParams }: PageProps) {
         </section>
 
         <div className="grid gap-8 lg:grid-cols-[260px_minmax(0,1fr)_260px]">
-          <aside className="space-y-6">
+          <aside className="space-y-6 min-w-0">
             <Suspense fallback={
               <div className="rounded-2xl border border-zinc-200/70 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
                 <div className="mb-2 h-4 rounded bg-zinc-200 dark:bg-zinc-700" />
@@ -78,7 +78,7 @@ export default async function Home({ searchParams }: PageProps) {
             </div>
           </aside>
 
-          <section className="space-y-6">
+          <section className="space-y-6 min-w-0">
             {error && (
               <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-sm text-red-600">
                 {error}
@@ -86,7 +86,7 @@ export default async function Home({ searchParams }: PageProps) {
             )}
 
             {/* Mobile filters — visible above gamecard component on small screens */}
-            <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70 lg:hidden">
+            <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70 lg:hidden max-w-full overflow-hidden min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.4em] text-zinc-500">
                 Filters
               </p>
@@ -97,7 +97,7 @@ export default async function Home({ searchParams }: PageProps) {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70">
+            <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70 max-w-full overflow-hidden min-w-0">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <Suspense fallback={<div className="inline-flex rounded-full bg-zinc-200 h-10 w-60 dark:bg-zinc-800" />}>
                   <ViewToggle />
@@ -120,7 +120,7 @@ export default async function Home({ searchParams }: PageProps) {
             </div>
           </section>
 
-          <aside className="space-y-6 hidden lg:block">
+          <aside className="space-y-6 hidden lg:block min-w-0">
             <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70">
               <p className="text-xs font-semibold uppercase tracking-[0.4em] text-zinc-500">
                 Filters
