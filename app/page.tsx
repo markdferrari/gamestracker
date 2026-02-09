@@ -1,10 +1,8 @@
-import { getGameGenres, getUpcomingPSGames, getRecentlyReleasedGames } from '@/lib/igdb';
-import type { IGDBGame } from '@/lib/igdb';
-import { GameCard } from '@/components/GameCard';
+import { getGameGenres } from '@/lib/igdb';
 import { LatestReviewsSection } from '@/components/LatestReviewsSection';
 import { PlatformFilter } from '@/components/PlatformFilter';
 import { TrendingSection } from '@/components/TrendingSection';
-import { ViewToggle } from '@/components/ViewToggle';
+import { GamesSection } from '@/components/GamesSection';
 import { Suspense } from 'react';
 
 interface PageProps {
@@ -13,36 +11,7 @@ interface PageProps {
 
 export default async function Home({ searchParams }: PageProps) {
   const params = await searchParams;
-  const platformParam = params.platform || 'all';
-  const studioParam = params.studio;
-  const platformFilter =
-    platformParam === '6'
-      ? ({ type: 'platform', id: 6 } as const)
-      : platformParam === 'all'
-        ? ({ type: 'all' } as const)
-        : ({ type: 'family', id: parseInt(platformParam, 10) || 1 } as const);
-  const view = params.view || 'upcoming';
-  const genreParam = params.genre;
   const genresPromise = getGameGenres();
-  
-  let games: IGDBGame[] = [];
-  let error = null;
-
-  const parsedStudioId = studioParam ? parseInt(studioParam, 10) : undefined;
-  const studioFilterId = typeof parsedStudioId === 'number' && !Number.isNaN(parsedStudioId) ? parsedStudioId : undefined;
-
-  try {
-    const genreId = genreParam ? parseInt(genreParam, 10) : undefined;
-    if (view === 'recent') {
-      games = await getRecentlyReleasedGames(platformFilter, genreId, studioFilterId);
-    } else {
-      games = await getUpcomingPSGames(platformFilter, genreId, studioFilterId);
-    }
-  } catch (e) {
-    error = e instanceof Error ? e.message : 'Failed to fetch games';
-    games = [];
-  }
-
   const genres = await genresPromise.catch(() => []);
 
   return (
@@ -81,12 +50,6 @@ export default async function Home({ searchParams }: PageProps) {
           </aside>
 
           <section className="space-y-6 min-w-0">
-            {error && (
-              <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-sm text-red-600">
-                {error}
-              </div>
-            )}
-
             {/* Mobile filters — visible above gamecard component on small screens */}
             <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70 lg:hidden max-w-full overflow-hidden min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.4em] text-zinc-500">
@@ -99,27 +62,16 @@ export default async function Home({ searchParams }: PageProps) {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70 max-w-full overflow-hidden min-w-0">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <Suspense fallback={<div className="inline-flex rounded-full bg-zinc-200 h-10 w-60 dark:bg-zinc-800" />}>
-                  <ViewToggle />
-                </Suspense>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Ranked by nearest release
-                </p>
+            <Suspense fallback={
+              <div className="rounded-3xl border border-zinc-200/70 bg-white/90 p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-950/70 space-y-4">
+                <div className="h-10 rounded-full bg-zinc-200 dark:bg-zinc-800 w-48" />
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-32 rounded-2xl bg-zinc-100 dark:bg-zinc-800" />
+                ))}
               </div>
-              <div className="mt-5 space-y-4">
-                {games.length > 0 ? (
-                  games.map((game) => <GameCard key={game.id} game={game} />)
-                ) : (
-                  !error && (
-                    <div className="rounded-2xl border border-dashed border-zinc-200/70 bg-zinc-50/70 p-8 text-center text-sm text-zinc-600 dark:border-zinc-800/70 dark:bg-zinc-900/60 dark:text-zinc-300">
-                      {view === 'recent' ? 'No recently released games found.' : 'No upcoming games found.'}
-                    </div>
-                  )
-                )}
-              </div>
-            </div>
+            }>
+              <GamesSection searchParams={params} />
+            </Suspense>
           </section>
 
           <aside className="space-y-6 hidden lg:block min-w-0">
