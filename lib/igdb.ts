@@ -118,7 +118,8 @@ interface IGDBReleaseDate {
 export type IGDBPlatformFilter =
   | { type: 'family'; id: number }
   | { type: 'platform'; id: number }
-  | { type: 'platformType'; id: number };
+  | { type: 'platformType'; id: number }
+  | { type: 'all' };
 
 const normalizePlatformFilter = (
   filter: IGDBPlatformFilter | number | undefined,
@@ -215,18 +216,23 @@ export async function getUpcomingPSGames(
   const sixMonthsAhead = currentTimestamp + (60 * 60 * 24 * 180); // 6 months
 
   const platformWhere =
-    platformFilter.type === 'family'
-      ? `platform.platform_family = (${platformFilter.id})`
-      : platformFilter.type === 'platform'
-        ? `platform = (${platformFilter.id})`
-        : `platform.platform_type = (${platformFilter.id})`;
+    platformFilter.type === 'all'
+      ? '' // No platform filter, get all
+      : platformFilter.type === 'family'
+        ? `platform.platform_family = (${platformFilter.id})`
+        : platformFilter.type === 'platform'
+          ? `platform = (${platformFilter.id})`
+          : `platform.platform_type = (${platformFilter.id})`;
 
   const filters = [
     'date != null',
     `date > ${currentTimestamp}`,
     `date <= ${sixMonthsAhead}`,
-    `${platformWhere}`,
   ];
+
+  if (platformWhere) {
+    filters.push(platformWhere);
+  }
 
   if (typeof genreId === 'number') {
     filters.push(`game.genres = (${genreId})`);
@@ -297,11 +303,12 @@ export async function getUpcomingPSGames(
     const dates = game.release_dates
       .filter(
         (rd) =>
-          (platformFilter.type === 'family'
-            ? rd.platform?.platform_family === platformFilter.id
-            : platformFilter.type === 'platform'
-              ? rd.platform?.id === platformFilter.id
-              : rd.platform?.platform_type === platformFilter.id) &&
+          (platformFilter.type === 'all' ||
+            (platformFilter.type === 'family'
+              ? rd.platform?.platform_family === platformFilter.id
+              : platformFilter.type === 'platform'
+                ? rd.platform?.id === platformFilter.id
+                : rd.platform?.platform_type === platformFilter.id)) &&
           typeof rd.date === 'number' &&
           rd.date > currentTimestamp &&
           rd.date <= sixMonthsAhead &&
@@ -344,18 +351,23 @@ export async function getRecentlyReleasedGames(
   const sixtyDaysAgo = currentTimestamp - (60 * 24 * 60 * 60); // 60 days in seconds
 
   const platformWhere =
-    platformFilter.type === 'family'
-      ? `platform.platform_family = (${platformFilter.id})`
-      : platformFilter.type === 'platform'
-        ? `platform = (${platformFilter.id})`
-        : `platform.platform_type = (${platformFilter.id})`;
+    platformFilter.type === 'all'
+      ? '' // No platform filter, get all
+      : platformFilter.type === 'family'
+        ? `platform.platform_family = (${platformFilter.id})`
+        : platformFilter.type === 'platform'
+          ? `platform = (${platformFilter.id})`
+          : `platform.platform_type = (${platformFilter.id})`;
 
   const filters = [
     'date != null',
     `date >= ${sixtyDaysAgo}`,
     `date <= ${currentTimestamp}`,
-    `${platformWhere}`,
   ];
+
+  if (platformWhere) {
+    filters.push(platformWhere);
+  }
 
   if (typeof genreId === 'number') {
     filters.push(`game.genres = (${genreId})`);
@@ -420,11 +432,12 @@ export async function getRecentlyReleasedGames(
     const dates = game.release_dates
       .filter(
         (rd) =>
-          (platformFilter.type === 'family'
-            ? rd.platform?.platform_family === platformFilter.id
-            : platformFilter.type === 'platform'
-              ? rd.platform?.id === platformFilter.id
-              : rd.platform?.platform_type === platformFilter.id) &&
+          (platformFilter.type === 'all' ||
+            (platformFilter.type === 'family'
+              ? rd.platform?.platform_family === platformFilter.id
+              : platformFilter.type === 'platform'
+                ? rd.platform?.id === platformFilter.id
+                : rd.platform?.platform_type === platformFilter.id)) &&
           typeof rd.date === 'number' &&
           rd.date >= sixtyDaysAgo &&
           rd.date <= currentTimestamp,
