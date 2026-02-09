@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/markdferrari/gamestracker/compare/v1.11.0...v1.12.0) (2026-02-09)
+
+
+### Features
+
+* embed trailer ([#26](https://github.com/markdferrari/gamestracker/issues/26)) ([4bddbfa](https://github.com/markdferrari/gamestracker/commit/4bddbfad5a1b521b53409e891fdc6803a2ee6f88))
+
 # [1.11.0](https://github.com/markdferrari/gamestracker/compare/v1.10.0...v1.11.0) (2026-02-09)
 
 
