@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
@@ -10,9 +11,65 @@ import { ScreenshotGallery } from '@/components/ScreenshotGallery';
 import { SimilarGamesCarousel } from '@/components/SimilarGamesCarousel';
 import { WatchlistToggle } from '@/components/WatchlistToggle';
 
+const SITE_URL = 'https://whencaniplayit.com';
+
 interface PageProps {
   params: Promise<{ id: string }>;
   searchParams?: Promise<{ oc?: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const gameId = parseInt(id, 10);
+
+  if (isNaN(gameId)) {
+    return {};
+  }
+
+  const game = await getGameById(gameId).catch(() => null);
+
+  if (!game) {
+    return {};
+  }
+
+  const coverImage = game.cover?.url
+    ? `https:${game.cover.url.replace('t_thumb', 't_cover_big')}`
+    : undefined;
+
+  const description = game.summary
+    ? game.summary.substring(0, 160)
+    : `Check out ${game.name} release info, reviews, and ratings on ${SITE_URL}`;
+
+  const platforms =
+    game.release_dates
+      ?.map((rd) => rd.platform?.name)
+      .filter((name): name is string => Boolean(name))
+      .filter((name, index, self) => self.indexOf(name) === index) ||
+    game.platforms?.map((p) => p.name) ||
+    [];
+
+  const platformLabel = platforms.length > 0 ? ` (${platforms.join(', ')})` : '';
+
+  return {
+    title: `${game.name}${platformLabel} | WhenCanIPlayIt.com`,
+    description,
+    alternates: {
+      canonical: `${SITE_URL}/game/${gameId}`,
+    },
+    openGraph: {
+      title: `${game.name}${platformLabel}`,
+      description,
+      url: `${SITE_URL}/game/${gameId}`,
+      type: 'video.movie',
+      images: coverImage ? [{ url: coverImage, width: 264, height: 352, alt: game.name }] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${game.name}${platformLabel}`,
+      description,
+      images: coverImage ? [coverImage] : [],
+    },
+  };
 }
 
 const formatReleaseBadge = (unixSeconds: number) => {
@@ -107,8 +164,54 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
   }));
   const collectionName = game.collection?.name;
 
+  // Build VideoGame structured data
+  const gameUrl = `${SITE_URL}/game/${gameId}`;
+  const coverImage = game.cover?.url
+    ? `https:${game.cover.url.replace('t_thumb', 't_cover_big')}`
+    : undefined;
+
+  const videoGameSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'VideoGame',
+    name: game.name,
+    description: game.summary || '',
+    url: gameUrl,
+    image: coverImage,
+    gamePlatform: platforms.length > 0 ? platforms : undefined,
+    ...(game.first_release_date && {
+      datePublished: new Date(game.first_release_date * 1000).toISOString().split('T')[0],
+    }),
+    ...(game.aggregated_rating && {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: (game.aggregated_rating / 10).toFixed(1),
+        bestRating: '10',
+        worstRating: '0',
+      },
+    }),
+    ...(involvedCompanies.filter((c) => c.role === 'Developer').length > 0 && {
+      author: involvedCompanies.filter((c) => c.role === 'Developer').map((c) => ({
+        '@type': 'Organization',
+        name: c.name,
+      })),
+    }),
+    ...(involvedCompanies.filter((c) => c.role === 'Publisher').length > 0 && {
+      publisher: involvedCompanies.filter((c) => c.role === 'Publisher').map((c) => ({
+        '@type': 'Organization',
+        name: c.name,
+      })),
+    }),
+    ...(game.genres && game.genres.length > 0 && {
+      genre: game.genres.map((g) => g.name),
+    }),
+  };
+
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.15),_transparent_45%)]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(videoGameSchema) }}
+      />
       <main className="mx-auto w-full max-w-[min(100vw,360px)] px-4 py-8 sm:px-6 sm:max-w-[min(100vw,640px)] lg:px-8 lg:max-w-6xl">
         {/* Back Button */}
         <Link
@@ -142,7 +245,7 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
                     <div className="relative aspect-[3/4]">
                       <Image
                         src={coverUrl}
-                        alt={game.name}
+                        alt={`${game.name} video game cover art for ${platforms.length > 0 ? platforms.join(', ') : 'PC'}`}
                         fill
                         unoptimized
                         className="object-cover"
@@ -321,7 +424,7 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
                           {similar.coverUrl ? (
                             <Image
                               src={similar.coverUrl}
-                              alt={similar.name}
+                              alt={`${similar.name} - Video game cover art`}
                               fill
                               sizes="(max-width: 768px) 90vw, 180px"
                               className="object-cover"

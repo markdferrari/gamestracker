@@ -14,9 +14,55 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL = "https://whencaniplayit.com";
+const SITE_NAME = "WhenCanIPlayIt.com";
+
 export const metadata: Metadata = {
-  title: "WhenCanIPlayIt.com",
-  description: "Track upcoming game releases",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "WhenCanIPlayIt.com - Video Game Release Tracker",
+    template: "%s | WhenCanIPlayIt.com",
+  },
+  description:
+    "Track verified video game release windows, trending review momentum, and upcoming drops across PlayStation, Xbox, Nintendo, and PC.",
+  keywords: [
+    "video game releases",
+    "game release tracker",
+    "upcoming games",
+    "recent releases",
+    "game review momentum",
+    "PlayStation releases",
+    "Xbox releases",
+    "Nintendo releases",
+    "PC game releases",
+  ],
+  robots: {
+    index: true,
+    follow: true,
+  },
+  openGraph: {
+    title: "WhenCanIPlayIt.com",
+    description:
+      "Track verified video game release windows, trending review momentum, and upcoming drops across PlayStation, Xbox, Nintendo, and PC.",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    images: [
+      {
+        url: `${SITE_URL}/logo.png`,
+        width: 1200,
+        height: 630,
+        alt: "WhenCanIPlayIt.com release tracker",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "WhenCanIPlayIt.com",
+    description:
+      "Track verified video game release windows, trending review momentum, and upcoming drops across PlayStation, Xbox, Nintendo, and PC.",
+    images: [`${SITE_URL}/logo.png`],
+  },
 };
 
 export default function RootLayout({
