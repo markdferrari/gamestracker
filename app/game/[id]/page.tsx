@@ -296,8 +296,8 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
                 </div>
               )}
 
-              {/* External Links */}
-              <div className="mt-6">
+              {/* External Links - Desktop only */}
+              <div className="mt-6 hidden lg:block">
                 <GameLinks websites={game.websites} />
               </div>
             </div>
@@ -414,6 +414,11 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
             )}
 
             <div className="mt-8 space-y-6">
+              {/* External Links - Mobile only */}
+              <div className="lg:hidden">
+                <GameLinks websites={game.websites} />
+              </div>
+
               {similarGames.length > 0 && (
                 <div className="space-y-4">
                   <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
