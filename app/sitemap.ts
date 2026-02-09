@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://whencaniplayit.com';
+  const baseUrl = 'https://www.whencaniplayit.com';
   
   // Core pages
   const staticRoutes: MetadataRoute.Sitemap = [
