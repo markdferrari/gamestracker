@@ -1,11 +1,10 @@
 # WhenCanIPlayIt.com robots.txt
-# All crawlers welcome for indexing
+# All crawlers welcome for indexing user-facing pages only
 
 User-agent: *
 Allow: /
-Allow: /api/opencritic/recently-released
-Allow: /api/opencritic/reviewed-this-week
-Disallow: /api/image
+Allow: /game/
+Disallow: /api/
 Disallow: /_next/
 Disallow: /__tests__/
 
