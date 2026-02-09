@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/markdferrari/gamestracker/compare/v1.10.0...v1.11.0) (2026-02-09)
+
+
+### Features
+
+* seo implementation ([#25](https://github.com/markdferrari/gamestracker/issues/25)) ([27255ab](https://github.com/markdferrari/gamestracker/commit/27255ab9a80338177bf4377720b40f93ef14bf54))
+
 # [1.10.0](https://github.com/markdferrari/gamestracker/compare/v1.9.0...v1.10.0) (2026-02-09)
 
 
