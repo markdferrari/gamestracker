@@ -295,6 +295,11 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
                   )}
                 </div>
               )}
+
+              {/* External Links */}
+              <div className="mt-6">
+                <GameLinks websites={game.websites} />
+              </div>
             </div>
 
             {/* Reviews & Ratings */}
@@ -409,8 +414,6 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
             )}
 
             <div className="mt-8 space-y-6">
-              <GameLinks websites={game.websites} />
-
               {similarGames.length > 0 && (
                 <div className="space-y-4">
                   <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
