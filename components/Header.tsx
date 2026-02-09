@@ -1,21 +1,22 @@
 import Link from "next/link";
-import { Suspense } from "react";
+import Image from "next/image";
 import { Star } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
-import { ViewToggle } from "./ViewToggle";
 
 export function Header() {
   return (
     <header className="sticky top-0 z-20 border-b border-zinc-200/70 bg-white/80 backdrop-blur dark:border-zinc-800/80 dark:bg-zinc-950/80">
       <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <Link href="/" className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-          WhenCanIPlayIt
+        <Link href="/" className="flex items-center h-10">
+          <Image
+            src="/logo.png"
+            alt="WhenCanIPlayIt"
+            width={200}
+            height={40}
+            priority
+            className="h-full w-auto"
+          />
         </Link>
-        <div className="flex flex-1 items-center justify-center">
-          <Suspense fallback={<div className="h-10 w-40" />}>
-            <ViewToggle />
-          </Suspense>
-        </div>
         <div className="flex items-center gap-3">
           <Link
             href="/watchlist"

@@ -30,9 +30,9 @@ export async function ReviewSection({ game, openCriticIdFromQuery }: ReviewSecti
     const parsed = parseInt(match[0], 10);
     return Number.isNaN(parsed) ? null : parsed;
   })();
-
+  const urlFriendlyGameName = game.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   const openCriticId = openCriticIdFromQuery ?? openCriticIdFromExternalGames;
-  const openCriticUrl = reviews.openCriticUrl ?? (openCriticId ? `https://opencritic.com/game/${openCriticId}` : undefined);
+  const openCriticUrl = reviews.openCriticUrl ?? (openCriticId ? `https://opencritic.com/game/${openCriticId}/${urlFriendlyGameName}` : undefined);
 
   const hasReviewLinks = !!(reviews.metacriticUrl || openCriticUrl);
   const hasAnyReviewContent = hasReviewLinks;
