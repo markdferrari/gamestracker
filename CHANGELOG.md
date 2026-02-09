@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/markdferrari/gamestracker/compare/v1.8.0...v1.9.0) (2026-02-09)
+
+
+### Features
+
+* filters for all and pc ([#23](https://github.com/markdferrari/gamestracker/issues/23)) ([e4bb25b](https://github.com/markdferrari/gamestracker/commit/e4bb25bb1868b105376784a4303c31aaa1c22dde))
+
 # [1.8.0](https://github.com/markdferrari/gamestracker/compare/v1.7.1...v1.8.0) (2026-02-09)
 
 
