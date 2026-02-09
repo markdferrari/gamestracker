@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const PLATFORMS = [
+  { id: 'all', name: 'All Platforms' },
   { id: '1', name: 'PlayStation' },
   { id: '2', name: 'Xbox' },
   { id: '5', name: 'Nintendo' },
-  { id: 'pc', name: 'PC' },
+  { id: '6', name: 'PC' },
 ];
 
 interface PlatformFilterProps {
@@ -17,7 +18,7 @@ interface PlatformFilterProps {
 export function PlatformFilter({ genres }: PlatformFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const currentPlatform = searchParams.get('platform') || '1';
+  const currentPlatform = searchParams.get('platform') || 'all';
   const currentGenre = searchParams.get('genre') || '';
   const currentStudio = searchParams.get('studio') || '';
 

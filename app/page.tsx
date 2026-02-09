@@ -13,12 +13,14 @@ interface PageProps {
 
 export default async function Home({ searchParams }: PageProps) {
   const params = await searchParams;
-  const platformParam = params.platform || '1';
+  const platformParam = params.platform || 'all';
   const studioParam = params.studio;
   const platformFilter =
-    platformParam === 'pc'
-      ? ({ type: 'family', id: 4 } as const)
-      : ({ type: 'family', id: parseInt(platformParam, 10) || 1 } as const);
+    platformParam === '6'
+      ? ({ type: 'platform', id: 6 } as const)
+      : platformParam === 'all'
+        ? ({ type: 'all' } as const)
+        : ({ type: 'family', id: parseInt(platformParam, 10) || 1 } as const);
   const view = params.view || 'upcoming';
   const genreParam = params.genre;
   const genresPromise = getGameGenres();
