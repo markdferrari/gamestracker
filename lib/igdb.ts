@@ -523,6 +523,52 @@ export async function getGameById(id: number): Promise<IGDBGame | null> {
   return game;
 }
 
+export async function getGamesByIds(ids: number[]): Promise<IGDBGame[]> {
+  if (ids.length === 0) {
+    return [];
+  }
+
+  const normalizedIds = Array.from(new Set(ids.map((id) => Number(id)).filter((value) => Number.isFinite(value))));
+  if (normalizedIds.length === 0) {
+    return [];
+  }
+
+  const query = `
+    fields id, name, summary, cover.url, first_release_date, platforms.name, screenshots.url,
+      release_dates.human, release_dates.date, release_dates.date_format, release_dates.platform.name, release_dates.platform.id;
+    where id = (${normalizedIds.join(',')});
+    limit ${normalizedIds.length};
+  `;
+
+  const results = await igdbRequest<IGDBGame[]>('games', query);
+  const isTbc = (human?: string) => {
+    if (!human) return false;
+    const normalized = human.toLowerCase();
+    return normalized.includes('tbc') || normalized.includes('tbd');
+  };
+
+  const gamesById = new Map<number, IGDBGame>();
+
+  for (const game of results) {
+    const releaseDates = game.release_dates?.filter(
+      (releaseDate) =>
+        typeof releaseDate.date === 'number' &&
+        releaseDate.date_format !== 7 &&
+        !isTbc(releaseDate.human),
+    );
+
+    if (releaseDates) {
+      game.release_dates = releaseDates.sort((a, b) => b.date - a.date);
+    }
+
+    gamesById.set(game.id, game);
+  }
+
+  return ids
+    .map((id) => gamesById.get(id))
+    .filter((game): game is IGDBGame => Boolean(game));
+}
+
 /**
  * Format a Unix timestamp to a human-readable date
  */
