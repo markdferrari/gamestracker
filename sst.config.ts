@@ -19,6 +19,10 @@ export default $config({
     const zoneId = "Z01083643VX0XZEEC21MK"
 
     const site = new sst.aws.Nextjs("WhenCanPlayIt", {
+      server: {
+        runtime: 'nodejs22.x',
+        architecture: 'arm64',
+      },      
       domain: {
         name: "www.whencaniplayit.com",
         aliases: ["whencaniplayit.com"],
