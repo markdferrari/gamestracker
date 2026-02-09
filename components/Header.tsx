@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
+import { Star } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { ViewToggle } from "./ViewToggle";
 
@@ -16,7 +16,16 @@ export function Header() {
             <ViewToggle />
           </Suspense>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-3">
+          <Link
+            href="/watchlist"
+            className="inline-flex items-center gap-2 rounded-full border border-zinc-200/70 bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-zinc-600 shadow-sm transition hover:border-sky-500 hover:text-sky-600 dark:border-zinc-800/70 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:border-sky-400 dark:hover:text-sky-200"
+          >
+            <Star className="h-4 w-4" />
+            Watchlist
+          </Link>
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );

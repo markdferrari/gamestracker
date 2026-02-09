@@ -8,6 +8,7 @@ import { GameLinks } from '@/components/GameLinks';
 import { ReviewSection } from '@/components/ReviewSection';
 import { ScreenshotGallery } from '@/components/ScreenshotGallery';
 import { SimilarGamesCarousel } from '@/components/SimilarGamesCarousel';
+import { WatchlistToggle } from '@/components/WatchlistToggle';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -210,9 +211,12 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
           {/* Right Column - Details */}
           <div className="lg:col-span-2 min-w-0">
             <div className="space-y-3">
-              <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-                {game.name}
-              </h1>
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+                  {game.name}
+                </h1>
+                <WatchlistToggle gameId={game.id} />
+              </div>
               {game.genres && game.genres.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {game.genres.slice(0, 2).map((genre) => (

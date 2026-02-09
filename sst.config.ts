@@ -22,7 +22,7 @@ export default $config({
       server: {
         runtime: 'nodejs22.x',
         architecture: 'arm64',
-      },      
+      },
       domain: {
         name: "www.whencaniplayit.com",
         aliases: ["whencaniplayit.com"],
