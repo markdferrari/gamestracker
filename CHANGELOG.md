@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/markdferrari/gamestracker/compare/v1.7.1...v1.8.0) (2026-02-09)
+
+
+### Features
+
+* watchlist ([#22](https://github.com/markdferrari/gamestracker/issues/22)) ([986dbb1](https://github.com/markdferrari/gamestracker/commit/986dbb116f7913d5a5eb861faf47830a1bbd40af))
+
 ## [1.7.1](https://github.com/markdferrari/gamestracker/compare/v1.7.0...v1.7.1) (2026-02-08)
 
 
