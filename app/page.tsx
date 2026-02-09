@@ -1,12 +1,67 @@
-import { getGameGenres } from '@/lib/igdb';
+import type { Metadata } from 'next';
+import { getGameGenres, getDeveloperStudios } from '@/lib/igdb';
 import { LatestReviewsSection } from '@/components/LatestReviewsSection';
 import { PlatformFilter } from '@/components/PlatformFilter';
 import { TrendingSection } from '@/components/TrendingSection';
 import { GamesSection } from '@/components/GamesSection';
 import { Suspense } from 'react';
 
+const SITE_URL = 'https://whencaniplayit.com';
+const SITE_NAME = 'WhenCanIPlayIt.com';
+const PLATFORM_LABELS: Record<string, string> = {
+  '1': 'PlayStation',
+  '2': 'Xbox',
+  '5': 'Nintendo',
+  '6': 'PC',
+};
+
 interface PageProps {
   searchParams: Promise<{ platform?: string; view?: string; genre?: string; studio?: string }>;
+}
+
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const params = await searchParams;
+  const platformParam = params.platform || 'all';
+  const viewParam = params.view || 'upcoming';
+  const genreParam = params.genre;
+  const studioParam = params.studio;
+
+  const genres = await getGameGenres().catch(() => []);
+  const genreName = genreParam ? genres.find((g) => g.id === parseInt(genreParam, 10))?.name : null;
+
+  let studioName: string | null = null;
+  if (studioParam) {
+    const studios = await getDeveloperStudios().catch(() => []);
+    studioName = studios.find((s) => s.id === parseInt(studioParam, 10))?.name || null;
+  }
+
+  const platformLabel = platformParam !== 'all' ? PLATFORM_LABELS[platformParam] || 'Multi-platform' : null;
+  const filterParts = [platformLabel, genreName, studioName].filter(Boolean);
+  const filterSuffix = filterParts.length ? ` - ${filterParts.join(', ')}` : '';
+  const viewText = viewParam === 'recent' ? 'Recently Released' : 'Upcoming';
+  const metaTitle = `${viewText} Video Game Releases${filterSuffix} | ${SITE_NAME}`;
+  const metaDescription = `Discover ${viewText.toLowerCase()} video game releases${filterParts.length ? ` for ${filterParts.join(', ')}` : ''} with verified release windows and trending review scores.`;
+
+  const queryParams = new URLSearchParams();
+  if (viewParam !== 'upcoming') queryParams.set('view', viewParam);
+  if (platformParam !== 'all') queryParams.set('platform', platformParam);
+  if (genreParam) queryParams.set('genre', genreParam);
+  if (studioParam) queryParams.set('studio', studioParam);
+  const canonicalUrl = queryParams.toString() ? `${SITE_URL}/?${queryParams.toString()}` : SITE_URL;
+
+  return {
+    title: metaTitle,
+    description: metaDescription,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title: metaTitle,
+      description: metaDescription,
+      url: canonicalUrl,
+      type: 'website',
+    },
+  };
 }
 
 export default async function Home({ searchParams }: PageProps) {

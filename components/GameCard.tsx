@@ -65,7 +65,7 @@ export function GameCard({ game }: GameCardProps) {
           <div className="relative w-24 aspect-[3/4] overflow-hidden bg-zinc-100 dark:bg-zinc-800 md:w-40 md:shrink-0">
             <Image
               src={selectedImageUrl}
-              alt={game.name}
+              alt={`${game.name} - Video game cover art`}
               fill
               unoptimized
               className="object-contain p-2 transition-opacity"
