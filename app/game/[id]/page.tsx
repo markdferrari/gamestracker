@@ -9,6 +9,7 @@ import { GameLinks } from '@/components/GameLinks';
 import { ReviewSection } from '@/components/ReviewSection';
 import { ScreenshotGallery } from '@/components/ScreenshotGallery';
 import { SimilarGamesCarousel } from '@/components/SimilarGamesCarousel';
+import { TrailerEmbed } from '@/components/TrailerEmbed';
 import { WatchlistToggle } from '@/components/WatchlistToggle';
 
 const SITE_URL = 'https://whencaniplayit.com';
@@ -263,37 +264,10 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
                 )}
               </div>
 
-              {(involvedCompanies.length > 0 || collectionName) && (
-                <div className="space-y-4 rounded-2xl border border-zinc-200/70 bg-white/90 p-4 dark:border-zinc-800/80 dark:bg-zinc-950/70">
-                  {collectionName && (
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
-                        Collection
-                      </p>
-                      <p className="mt-1 text-sm text-zinc-900 dark:text-zinc-100">
-                        {collectionName}
-                      </p>
-                    </div>
-                  )}
-                  {involvedCompanies.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {involvedCompanies.map((company) => (
-                        <span
-                          key={company.id}
-                          className="rounded-full border border-zinc-200/80 bg-zinc-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-zinc-700 dark:border-zinc-800/60 dark:bg-zinc-900/60 dark:text-zinc-200"
-                        >
-                          {company.name}
-                          {company.role && (
-                            <span className="ml-1 text-[0.6rem] font-normal uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
-                              {company.role}
-                            </span>
-                          )}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+              {/* External Links - Desktop only */}
+              <div className="mt-6 hidden lg:block">
+                <GameLinks websites={game.websites} />
+              </div>
             </div>
 
             {/* Reviews & Ratings */}
@@ -344,6 +318,39 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
                   ))}
                 </div>
               )}
+              
+              {/* Studios & Involved Companies */}
+              {(involvedCompanies.length > 0 || collectionName) && (
+                <div className="mt-4 space-y-3">
+                  {collectionName && (
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
+                        Collection
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                        {collectionName}
+                      </p>
+                    </div>
+                  )}
+                  {involvedCompanies.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {involvedCompanies.map((company) => (
+                        <span
+                          key={company.id}
+                          className="rounded-full border border-zinc-200/80 bg-zinc-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-zinc-700 dark:border-zinc-800/60 dark:bg-zinc-900/60 dark:text-zinc-200"
+                        >
+                          {company.name}
+                          {company.role && (
+                            <span className="ml-1 text-[0.6rem] font-normal uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
+                              {company.role}
+                            </span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Summary */}
@@ -359,6 +366,13 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
             )}
 
             <div className="mt-8 border-t border-zinc-200/70 pt-8 dark:border-zinc-800/70" />
+
+            {/* Trailer */}
+            {game.videos && game.videos.length > 0 && (
+              <div className="mt-8">
+                <TrailerEmbed videoId={game.videos[0].video_id} title={game.name} />
+              </div>
+            )}
 
             {/* Screenshots */}
             {screenshots.length > 0 && (
@@ -401,7 +415,10 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
             )}
 
             <div className="mt-8 space-y-6">
-              <GameLinks websites={game.websites} />
+              {/* External Links - Mobile only */}
+              <div className="lg:hidden">
+                <GameLinks websites={game.websites} />
+              </div>
 
               {similarGames.length > 0 && (
                 <div className="space-y-4">

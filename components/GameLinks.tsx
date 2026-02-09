@@ -82,7 +82,7 @@ export function GameLinks({ websites }: GameLinksProps) {
       <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
         External Links
       </h2>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <div className="mt-4 grid grid-cols-2 gap-3">
         {sortedWebsites.map((website, index) => {
           const categoryInfo = WEBSITE_CATEGORIES[website.category];
           const categoryName = categoryInfo?.name || '';

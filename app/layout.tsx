@@ -46,14 +46,6 @@ export const metadata: Metadata = {
       "Track verified video game release windows, trending review momentum, and upcoming drops across PlayStation, Xbox, Nintendo, and PC.",
     url: SITE_URL,
     siteName: SITE_NAME,
-    images: [
-      {
-        url: `${SITE_URL}/logo.png`,
-        width: 1200,
-        height: 630,
-        alt: "WhenCanIPlayIt.com release tracker",
-      },
-    ],
     type: "website",
   },
   twitter: {
@@ -61,7 +53,6 @@ export const metadata: Metadata = {
     title: "WhenCanIPlayIt.com",
     description:
       "Track verified video game release windows, trending review momentum, and upcoming drops across PlayStation, Xbox, Nintendo, and PC.",
-    images: [`${SITE_URL}/logo.png`],
   },
 };
 
