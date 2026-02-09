@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/markdferrari/gamestracker/compare/v1.9.0...v1.10.0) (2026-02-09)
+
+
+### Features
+
+* logo ([#24](https://github.com/markdferrari/gamestracker/issues/24)) ([605420d](https://github.com/markdferrari/gamestracker/commit/605420d392a83f0609015dba6b1d7aec01318a12))
+
 # [1.9.0](https://github.com/markdferrari/gamestracker/compare/v1.8.0...v1.9.0) (2026-02-09)
 
 
