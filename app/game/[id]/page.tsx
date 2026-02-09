@@ -9,6 +9,7 @@ import { GameLinks } from '@/components/GameLinks';
 import { ReviewSection } from '@/components/ReviewSection';
 import { ScreenshotGallery } from '@/components/ScreenshotGallery';
 import { SimilarGamesCarousel } from '@/components/SimilarGamesCarousel';
+import { TrailerEmbed } from '@/components/TrailerEmbed';
 import { WatchlistToggle } from '@/components/WatchlistToggle';
 
 const SITE_URL = 'https://whencaniplayit.com';
@@ -359,6 +360,13 @@ export default async function GameDetailPage({ params, searchParams }: PageProps
             )}
 
             <div className="mt-8 border-t border-zinc-200/70 pt-8 dark:border-zinc-800/70" />
+
+            {/* Trailer */}
+            {game.videos && game.videos.length > 0 && (
+              <div className="mt-8">
+                <TrailerEmbed videoId={game.videos[0].video_id} title={game.name} />
+              </div>
+            )}
 
             {/* Screenshots */}
             {screenshots.length > 0 && (

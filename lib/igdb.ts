@@ -59,6 +59,7 @@ export interface IGDBGame {
   first_release_date?: number;
   platforms?: Array<{ id: number; name: string }>;
   screenshots?: Array<{ url: string }>;
+  videos?: Array<{ video_id: string }>;
   similar_games?: Array<{ id: number; name: string; cover?: { url: string } }>;
   genres?: Array<{ id: number; name: string }>;
   release_dates?: Array<{
@@ -509,7 +510,7 @@ export async function getSimilarGamesById(id: number): Promise<IGDBGame['similar
  */
 export async function getGameById(id: number): Promise<IGDBGame | null> {
   const query = `
-  fields name, summary, cover.url, first_release_date, platforms.name, screenshots.url, release_dates.human, release_dates.date, release_dates.date_format, release_dates.platform.name, release_dates.platform.id, websites.category, websites.url, external_games.category, external_games.uid, aggregated_rating, aggregated_rating_count, genres.name, involved_companies.company.id, involved_companies.company.name, involved_companies.developer, involved_companies.publisher, collection.id, collection.name;
+  fields name, summary, cover.url, first_release_date, platforms.name, screenshots.url, videos.video_id, release_dates.human, release_dates.date, release_dates.date_format, release_dates.platform.name, release_dates.platform.id, websites.category, websites.url, external_games.category, external_games.uid, aggregated_rating, aggregated_rating_count, genres.name, involved_companies.company.id, involved_companies.company.name, involved_companies.developer, involved_companies.publisher, collection.id, collection.name;
     where id = ${id};
   `;
 
