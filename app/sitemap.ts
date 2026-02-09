@@ -27,17 +27,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { id: '6', name: 'PC' },
   ];
 
-  const platformRoutes = platforms.flatMap((platform) => [
+  const platformRoutes: MetadataRoute.Sitemap = platforms.flatMap((platform) => [
     {
       url: `${baseUrl}/?platform=${platform.id}`,
       lastModified: new Date(),
-      changeFrequency: 'daily',
+      changeFrequency: 'daily' as const,
       priority: 0.8,
     },
     {
       url: `${baseUrl}/?platform=${platform.id}&view=recent`,
       lastModified: new Date(),
-      changeFrequency: 'daily',
+      changeFrequency: 'daily' as const,
       priority: 0.8,
     },
   ]);
